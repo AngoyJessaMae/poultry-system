@@ -18,10 +18,11 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mortality Date</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Count</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cause</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Station</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Birds Lost</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Suspected Cause</th>
                                 <th scope="col" class="relative px-6 py-3">
                                     <span class="sr-only">Edit</span>
                                 </th>
@@ -30,10 +31,11 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($mortalityRecords as $record)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->created_at->format('Y-m-d') }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->batch->name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->mortality_date->format('Y-m-d') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->batch->batch_code }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->station->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $record->count }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->cause }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap max-w-xs truncate">{{ $record->suspected_cause }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('worker.mortality-records.edit', $record) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                     </td>

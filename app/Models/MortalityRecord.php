@@ -25,8 +25,17 @@ class MortalityRecord extends Model
         return $this->belongsTo(Batch::class);
     }
 
+    public function station(): BelongsTo
+    {
+        return $this->belongsTo(Station::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
+
+    protected $casts = [
+        'mortality_date' => 'datetime',
+    ];
 }
