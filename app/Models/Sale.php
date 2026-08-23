@@ -30,4 +30,11 @@ class Sale extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    protected $casts = [
+        'sale_date' => 'datetime',
+        'total_weight_kg' => 'decimal:2',
+        'price_per_kg' => 'decimal:2',
+        'total_amount' => 'decimal:2',
+    ];
 }

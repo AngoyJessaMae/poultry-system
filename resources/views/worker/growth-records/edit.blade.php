@@ -18,8 +18,14 @@
                             <x-input-label for="batch_id" :value="__('Batch')" />
                             <select id="batch_id" name="batch_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                 <option value="">Select a batch</option>
-                                @foreach(\App\Models\Batch::where('current_quantity', '>', 0)->get() as $batch)
-                                    <option value="{{ $batch->id }}" @if($growthRecord->batch_id == $batch->id) selected @endif>{{ $batch->batch_code }}</option>
+                                {{-- Include current batch even if its quantity is 0, since it was already assigned to this record --}}
+                                @php
+                                    $batches = \App\Models\Batch::where('current_quantity', '>', 0)
+                                        ->orWhere('id', $growthRecord->batch_id)
+                                        ->get();
+                                @endphp
+                                @foreach($batches as $batch)
+                                    <option value="{{ $batch->id }}" @if(old('batch_id', $growthRecord->batch_id) == $batch->id) selected @endif>{{ $batch->batch_code }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('batch_id')" class="mt-2" />

@@ -18,9 +18,10 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sale Date</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heads Sold</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Birds Sold</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Weight</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
                                 <th scope="col" class="relative px-6 py-3">
                                     <span class="sr-only">Edit</span>
@@ -30,10 +31,11 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($sales as $sale)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $sale->created_at->format('Y-m-d') }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $sale->batch->name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $sale->sale_date->format('Y-m-d') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $sale->batch->batch_code }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $sale->heads_sold }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">${{ number_format($sale->total_amount, 2) }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ number_format($sale->total_weight_kg, 2) }} kg</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">₱{{ number_format($sale->total_amount, 2) }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('worker.sales.edit', $sale) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                     </td>
