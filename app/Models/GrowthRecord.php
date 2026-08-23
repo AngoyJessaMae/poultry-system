@@ -26,6 +26,12 @@ class GrowthRecord extends Model
         return $this->belongsTo(Batch::class);
     }
 
+    protected $casts = [
+        'recorded_date' => 'datetime',
+        'average_weight_grams' => 'decimal:2',
+        'is_below_expected' => 'boolean',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

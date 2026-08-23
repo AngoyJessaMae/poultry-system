@@ -30,7 +30,7 @@
                             @foreach($growthRecords as $record)
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $record->created_at->format('Y-m-d') }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->batch->name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->batch->batch_code }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $record->average_weight }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('worker.growth-records.edit', $record) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>

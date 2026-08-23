@@ -25,14 +25,31 @@
                             <x-input-error :messages="$errors->get('batch_id')" class="mt-2" />
                         </div>
 
+                        <!-- Recorded Date -->
+                        <div class="mt-4">
+                            <x-input-label for="recorded_date" :value="__('Recorded Date')" />
+                            <x-text-input id="recorded_date" class="block mt-1 w-full" type="date" name="recorded_date" :value="old('recorded_date', $growthRecord->recorded_date?->format('Y-m-d'))" required />
+                            <x-input-error :messages="$errors->get('recorded_date')" class="mt-2" />
+                        </div>
+
                         <!-- Average Weight -->
                         <div class="mt-4">
-                            <x-input-label for="average_weight" :value="__('Average Weight (g)')" />
-                            <x-text-input id="average_weight" class="block mt-1 w-full" type="number" step="0.01" name="average_weight" :value="old('average_weight', $growthRecord->average_weight)" required />
-                            <x-input-error :messages="$errors->get('average_weight')" class="mt-2" />
+                            <x-input-label for="average_weight_grams" :value="__('Average Weight (g)')" />
+                            <x-text-input id="average_weight_grams" class="block mt-1 w-full" type="number" step="0.01" name="average_weight_grams" :value="old('average_weight_grams', $growthRecord->average_weight_grams)" required />
+                            <x-input-error :messages="$errors->get('average_weight_grams')" class="mt-2" />
+                        </div>
+
+                        <!-- Notes (Optional) -->
+                        <div class="mt-4">
+                            <x-input-label for="notes" :value="__('Notes (Optional)')" />
+                            <textarea id="notes" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" name="notes">{{ old('notes', $growthRecord->notes) }}</textarea>
+                            <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                         </div>
 
                         <div class="flex items-center justify-end mt-4">
+                            <a href="{{ route('worker.growth-records.index') }}" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                {{ __('Cancel') }}
+                            </a>
                             <x-primary-button class="ms-4">
                                 {{ __('Update Record') }}
                             </x-primary-button>
