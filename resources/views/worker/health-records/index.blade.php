@@ -18,9 +18,10 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recorded At</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observation</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th scope="col" class="relative px-6 py-3">
                                     <span class="sr-only">Edit</span>
                                 </th>
@@ -29,9 +30,10 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($healthRecords as $record)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->created_at->format('Y-m-d') }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->batch->name }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->observation }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->recorded_at->format('Y-m-d H:i') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->batch->batch_code }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap capitalize">{{ $record->record_type }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap max-w-xs truncate">{{ $record->description }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('worker.health-records.edit', $record) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                     </td>

@@ -29,4 +29,8 @@ class HealthRecord extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    protected $casts = [
+        'recorded_at' => 'datetime',
+    ];
 }

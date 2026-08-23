@@ -31,6 +31,34 @@
                             <x-input-error :messages="$errors->get('recorded_date')" class="mt-2" />
                         </div>
 
+                        <!-- Age (Days) -->
+                        <div class="mt-4">
+                            <x-input-label for="age_days" :value="__('Age (Days)')" />
+                            <x-text-input id="age_days" class="block mt-1 w-full" type="number" name="age_days" :value="old('age_days')" required />
+                            <x-input-error :messages="$errors->get('age_days')" class="mt-2" />
+                        </div>
+
+                        <!-- Growth Stage -->
+                        <div class="mt-4">
+                            <x-input-label for="growth_stage" :value="__('Growth Stage')" />
+                            <select id="growth_stage" name="growth_stage" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                                <option value="">Select a stage</option>
+                                <option value="chick" @if(old('growth_stage') == 'chick') selected @endif>Chick</option>
+                                <option value="grower" @if(old('growth_stage') == 'grower') selected @endif>Grower</option>
+                                <option value="market_ready" @if(old('growth_stage') == 'market_ready') selected @endif>Market Ready</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('growth_stage')" class="mt-2" />
+                        </div>
+
+                        <!-- Is Below Expected? -->
+                        <div class="mt-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="is_below_expected" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" value="1" @if(old('is_below_expected')) checked @endif>
+                                <span class="ml-2 text-sm text-gray-600">{{ __('Growth is below expected') }}</span>
+                            </label>
+                            <x-input-error :messages="$errors->get('is_below_expected')" class="mt-2" />
+                        </div>
+
                         <!-- Average Weight -->
                         <div class="mt-4">
                             <x-input-label for="average_weight_grams" :value="__('Average Weight (g)')" />
