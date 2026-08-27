@@ -12,8 +12,9 @@ class UserController extends Controller
     public function index()
     {
         $this->authorize('viewAny', User::class);
-        $users = User::where('role', 'worker')->get();
-        return view('manager.users.index', compact('users'));
+        $activeUsers = User::where('role', 'worker')->where('is_active', true)->get();
+        $pendingUsers = User::where('role', 'worker')->where('is_active', false)->get();
+        return view('manager.users.index', compact('activeUsers', 'pendingUsers'));
     }
 
     public function create()
@@ -37,6 +38,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'worker',
+            'is_active' => true, // Manager-created workers are automatically active
         ]);
 
         return redirect()->route('manager.users.index');
@@ -79,5 +81,14 @@ class UserController extends Controller
         $this->authorize('delete', $user);
         $user->delete();
         return redirect()->route('manager.users.index');
+    }
+
+    public function activate(User $user)
+    {
+        $this->authorize('update', $user);
+        
+        $user->update(['is_active' => true]);
+        
+        return redirect()->route('manager.users.index')->with('success', 'Worker activated successfully. They can now log in to the system.');
     }
 }

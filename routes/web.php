@@ -40,9 +40,11 @@ Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')
 
     Route::resource('stations', StationController::class);
     Route::resource('batches', BatchController::class);
-    Route::resource('users', UserController::class); // Assuming you have a UserController for manager to create workers
+    Route::resource('users', UserController::class);
+    Route::patch('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate'); // Route to activate pending workers
 
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+
     Route::get('reports/export/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
     Route::get('reports/export/excel', [ReportController::class, 'exportExcel'])->name('reports.export.excel');
     Route::post('reports/export', [ReportController::class, 'export'])->name('reports.export');
@@ -58,8 +60,8 @@ Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')
 Route::middleware(['auth', 'role:worker'])->prefix('worker')->name('worker.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'workerDashboard'])->name('dashboard');
 
-    Route::resource('stations', StationController::class)->only(['index', 'show']);
-    Route::resource('batches', BatchController::class)->only(['index', 'show']);
+    Route::resource('stations', StationController::class);
+    Route::resource('batches', BatchController::class);
 
     Route::resource('feeding-logs', FeedingLogController::class)->except(['destroy']);
     Route::resource('growth-records', GrowthRecordController::class)->except(['destroy']);

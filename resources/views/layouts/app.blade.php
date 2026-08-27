@@ -16,7 +16,7 @@
 </head>
 <body class="font-sans antialiased">
     <div class="min-h-screen bg-gray-50">
-        <div x-data="{ open: false }" class="flex">
+        <div x-data="{ sidebarOpen: true }" class="flex">
             <!-- Sidebar -->
             @include('layouts.sidebar')
 
@@ -25,7 +25,7 @@
                 @include('layouts.navigation')
 
                 <!-- Page Heading -->
-                <header class="bg-brand-white shadow border-b-2 border-brand-orange">
+                <header class="bg-brand-white shadow border-b-2 border-white">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>

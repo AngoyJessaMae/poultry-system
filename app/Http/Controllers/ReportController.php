@@ -23,8 +23,12 @@ class ReportController extends Controller
         $filters = $request->only(['start_date', 'end_date', 'station_id', 'batch_id', 'report_type']);
 
         $analytics = $this->getAnalytics($filters);
+        $data = $this->getData($filters);
 
-        return view('manager.reports.index', compact('stations', 'batches', 'filters', 'analytics'));
+        // Debug: Let's check what data we're getting
+        // dd($filters, $analytics, $data->count(), $data);
+
+        return view('manager.reports.index', compact('stations', 'batches', 'filters', 'analytics', 'data'));
     }
 
     public function exportPdf(Request $request)
@@ -47,17 +51,78 @@ class ReportController extends Controller
     {
         // Feed-to-weight ratio
         $totalFeed = FeedingLog::query()
-            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('created_at', '>=', $date))
-            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('created_at', '<=', $date))
+            ->when($filters['start_date'] ?? null, function ($q, $date) {
+                try {
+                    $startDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('fed_at', '>=', $startDate);
+                } catch (\Exception $e) {
+                    $q->where('fed_at', '>=', $date);
+                }
+            })
+            ->when($filters['end_date'] ?? null, function ($q, $date) {
+                try {
+                    $endDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('fed_at', '<=', $endDate);
+                } catch (\Exception $e) {
+                    $q->where('fed_at', '<=', $date);
+                }
+            })
             ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
-            ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
+            ->when($filters['batch_id'] ?? null, function ($q, $id) {
+                $q->where(function($subq) use ($id) {
+                    $subq->where('batch_id', $id)->orWhereNull('batch_id');
+                });
+            })
             ->sum('quantity_kg');
 
+        $feedingRecords = FeedingLog::query()
+            ->when($filters['start_date'] ?? null, function ($q, $date) {
+                try {
+                    $startDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('fed_at', '>=', $startDate);
+                } catch (\Exception $e) {
+                    $q->where('fed_at', '>=', $date);
+                }
+            })
+            ->when($filters['end_date'] ?? null, function ($q, $date) {
+                try {
+                    $endDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('fed_at', '<=', $endDate);
+                } catch (\Exception $e) {
+                    $q->where('fed_at', '<=', $date);
+                }
+            })
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
+              ->when($filters['batch_id'] ?? null, function ($q, $id) {
+                  $q->where(function($subq) use ($id) {
+                      $subq->where('batch_id', $id)->orWhereNull('batch_id');
+                  });
+              })
+            ->orderBy('fed_at')
+            ->get();
+
         $growthRecords = GrowthRecord::query()
-            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('created_at', '>=', $date))
-            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('created_at', '<=', $date))
-            ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
-            ->orderBy('created_at')
+            ->join('batches', 'growth_records.batch_id', '=', 'batches.id')
+            ->when($filters['start_date'] ?? null, function ($q, $date) {
+                try {
+                    $startDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('recorded_date', '>=', $startDate);
+                } catch (\Exception $e) {
+                    $q->where('recorded_date', '>=', $date);
+                }
+            })
+            ->when($filters['end_date'] ?? null, function ($q, $date) {
+                try {
+                    $endDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('recorded_date', '<=', $endDate);
+                } catch (\Exception $e) {
+                    $q->where('recorded_date', '<=', $date);
+                }
+            })
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('batches.station_id', $id))
+            ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('growth_records.batch_id', $id))
+            ->select('growth_records.*')
+            ->orderBy('recorded_date')
             ->get();
 
         $weightGain = 0;
@@ -69,9 +134,28 @@ class ReportController extends Controller
 
         // Mortality rate
         $totalMortality = MortalityRecord::query()
-            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('created_at', '>=', $date))
-            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('created_at', '<=', $date))
-            ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn($q) => $q->where('id', $id)))
+            ->when($filters['start_date'] ?? null, function ($q, $date) {
+                try {
+                    $startDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('mortality_date', '>=', $startDate);
+                } catch (\Exception $e) {
+                    $q->where('mortality_date', '>=', $date);
+                }
+            })
+            ->when($filters['end_date'] ?? null, function ($q, $date) {
+                try {
+                    $endDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('mortality_date', '<=', $endDate);
+                } catch (\Exception $e) {
+                    $q->where('mortality_date', '<=', $date);
+                }
+            })
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
+                ->when($filters['batch_id'] ?? null, function ($q, $id) {
+                    $q->where(function($subq) use ($id) {
+                        $subq->where('batch_id', $id)->orWhereNull('batch_id');
+                    });
+                })
             ->sum('count');
 
         $initialQuantity = Batch::query()
@@ -80,20 +164,132 @@ class ReportController extends Controller
 
         $mortalityRate = $initialQuantity > 0 ? ($totalMortality / $initialQuantity) * 100 : 0;
 
-        // Monthly profit
+        // Total sales
         $totalSales = Sale::query()
-            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('created_at', '>=', $date))
-            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('created_at', '<=', $date))
+            ->join('batches', 'sales.batch_id', '=', 'batches.id')
+            ->when($filters['start_date'] ?? null, function ($q, $date) {
+                try {
+                    $startDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('sale_date', '>=', $startDate);
+                } catch (\Exception $e) {
+                    $q->where('sale_date', '>=', $date);
+                }
+            })
+            ->when($filters['end_date'] ?? null, function ($q, $date) {
+                try {
+                    $endDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('sale_date', '<=', $endDate);
+                } catch (\Exception $e) {
+                    $q->where('sale_date', '<=', $date);
+                }
+            })
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('batches.station_id', $id))
+            ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('sales.batch_id', $id))
             ->sum('total_amount');
 
         $baselineProfit = 7000;
         $profitDifference = $baselineProfit > 0 ? (($totalSales - $baselineProfit) / $baselineProfit) * 100 : 0;
+
+        // Worker feeding activity - track which workers did the feedings
+        // First get all feeding logs, then aggregate in PHP to avoid MySQL ONLY_FULL_GROUP_BY issues
+        $allFeedingLogs = FeedingLog::query()
+            ->with('user') // Eager load user relationship
+            ->when($filters['start_date'] ?? null, function ($q, $date) {
+                try {
+                    $startDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('fed_at', '>=', $startDate);
+                } catch (\Exception $e) {
+                    $q->where('fed_at', '>=', $date);
+                }
+            })
+            ->when($filters['end_date'] ?? null, function ($q, $date) {
+                try {
+                    $endDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('fed_at', '<=', $endDate);
+                } catch (\Exception $e) {
+                    $q->where('fed_at', '<=', $date);
+                }
+            })
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
+            ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
+            ->get();
+        
+        // Aggregate manually in PHP to avoid SQL group by issues
+         // Debug: Check what feeding logs we're getting
+          // dd($filters, $allFeedingLogs->count(), $allFeedingLogs);
+         
+         $workerFeedingActivity = $allFeedingLogs->groupBy(function($log) {
+             $workerName = $log->user->name ?? 'Unknown Worker';
+             $workerId = $log->user->id ?? 0;
+             return $workerId . '|' . $workerName;
+         })->map(function($logs, $key) {
+             [$workerId, $workerName] = explode('|', $key, 2);
+             return (object)[
+                 'worker_id' => $workerId,
+                 'worker_name' => $workerName,
+                 'total_feedings' => $logs->count(),
+                 'total_feed_kg' => $logs->sum('quantity_kg')
+             ];
+         })->sortByDesc('total_feedings')->values();
+
+        // Additional overall analytics
+        $totalFeedingLogs = $feedingRecords->count();
+        $totalGrowthRecords = $growthRecords->count();
+        $totalMortalityRecords = MortalityRecord::query()
+            ->when($filters['start_date'] ?? null, function ($q, $date) {
+                try {
+                    $startDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('mortality_date', '>=', $startDate);
+                } catch (\Exception $e) {
+                    $q->where('mortality_date', '>=', $date);
+                }
+            })
+            ->when($filters['end_date'] ?? null, function ($q, $date) {
+                try {
+                    $endDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('mortality_date', '<=', $endDate);
+                } catch (\Exception $e) {
+                    $q->where('mortality_date', '<=', $date);
+                }
+            })
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
+            ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
+            ->count();
+        $totalSalesRecords = Sale::query()
+            ->join('batches', 'sales.batch_id', '=', 'batches.id')
+            ->when($filters['start_date'] ?? null, function ($q, $date) {
+                try {
+                    $startDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('sale_date', '>=', $startDate);
+                } catch (\Exception $e) {
+                    $q->where('sale_date', '>=', $date);
+                }
+            })
+            ->when($filters['end_date'] ?? null, function ($q, $date) {
+                try {
+                    $endDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                    $q->where('sale_date', '<=', $endDate);
+                } catch (\Exception $e) {
+                    $q->where('sale_date', '<=', $date);
+                }
+            })
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('batches.station_id', $id))
+            ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('sales.batch_id', $id))
+            ->count();
+        $uniqueWorkers = $workerFeedingActivity->count();
 
         return [
             'feedToWeightRatio' => $feedToWeightRatio,
             'mortalityRate' => $mortalityRate,
             'totalSales' => $totalSales,
             'profitDifference' => $profitDifference,
+            'workerFeedingActivity' => $workerFeedingActivity,
+            'totalFeedingLogs' => $totalFeedingLogs,
+            'totalGrowthRecords' => $totalGrowthRecords,
+            'totalMortalityRecords' => $totalMortalityRecords,
+            'totalSalesRecords' => $totalSalesRecords,
+            'uniqueWorkers' => $uniqueWorkers,
+            'totalFeedUsed' => $totalFeed,
         ];
     }
 
@@ -102,26 +298,74 @@ class ReportController extends Controller
         $reportType = $filters['report_type'] ?? 'all';
         $query = match ($reportType) {
             'feeding' => FeedingLog::query(),
-            'growth' => GrowthRecord::query(),
+            'growth' => GrowthRecord::query()->join('batches', 'growth_records.batch_id', '=', 'batches.id')->select('growth_records.*'),
             'mortality' => MortalityRecord::query(),
-            'sales' => Sale::query(),
+            'sales' => Sale::query()->join('batches', 'sales.batch_id', '=', 'batches.id')->select('sales.*'),
             default => collect(),
         };
 
         if ($reportType !== 'all') {
             return $query
-                ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('created_at', '>=', $date))
-                ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('created_at', '<=', $date))
-                ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
-                ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
+                ->when($filters['start_date'] ?? null, function ($q, $date) use ($reportType) {
+                    match($reportType) {
+                        'feeding' => $q->where('fed_at', '>=', $date),
+                        'growth' => $q->where('recorded_date', '>=', $date),
+                        'mortality' => $q->where('mortality_date', '>=', $date),
+                        'sales' => $q->where('sale_date', '>=', $date),
+                        default => $q->where('created_at', '>=', $date),
+                    };
+                })
+                ->when($filters['end_date'] ?? null, function ($q, $date) use ($reportType) {
+                    match($reportType) {
+                        'feeding' => $q->where('fed_at', '<=', $date),
+                        'growth' => $q->where('recorded_date', '<=', $date),
+                        'mortality' => $q->where('mortality_date', '<=', $date),
+                        'sales' => $q->where('sale_date', '<=', $date),
+                        default => $q->where('created_at', '<=', $date),
+                    };
+                })
+                ->when($filters['station_id'] ?? null, function ($q, $id) use ($reportType) {
+                    match($reportType) {
+                        'feeding' => $q->where('station_id', $id),
+                        'growth' => $q->where('batches.station_id', $id),
+                        'mortality' => $q->where('station_id', $id),
+                        'sales' => $q->where('batches.station_id', $id),
+                        default => $q->where('station_id', $id),
+                    };
+                })
+                ->when($filters['batch_id'] ?? null, function ($q, $id) use ($reportType) {
+                    match($reportType) {
+                        'feeding' => $q->where('batch_id', $id),
+                        'growth' => $q->where('growth_records.batch_id', $id),
+                        'mortality' => $q->where('batch_id', $id),
+                        'sales' => $q->where('sales.batch_id', $id),
+                        default => $q->where('batch_id', $id),
+                    };
+                })
                 ->get();
+            // Debug: Check what data we're getting for detailed feeding logs
+             // dd($reportType, $filters, $query->count(), $query);
         }
 
         return collect([
-            'feeding' => FeedingLog::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('created_at', '>=', $date))->get(),
-            'growth' => GrowthRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('created_at', '>=', $date))->get(),
-            'mortality' => MortalityRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('created_at', '>=', $date))->get(),
-            'sales' => Sale::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('created_at', '>=', $date))->get(),
+            'feeding' => FeedingLog::query()->when($filters['start_date'] ?? null, function ($q, $date) {
+                    try {
+                        $startDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                        $q->where('fed_at', '>=', $startDate);
+                    } catch (\Exception $e) {
+                        $q->where('fed_at', '>=', $date);
+                    }
+                })->when($filters['end_date'] ?? null, function ($q, $date) {
+                    try {
+                        $endDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                        $q->where('fed_at', '<=', $endDate);
+                    } catch (\Exception $e) {
+                        $q->where('fed_at', '<=', $date);
+                    }
+                })->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))->get(),
+            'growth' => GrowthRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '>=', $date))->get(),
+            'mortality' => MortalityRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('mortality_date', '>=', $date))->get(),
+            'sales' => Sale::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('sale_date', '>=', $date))->get(),
         ]);
     }
 }

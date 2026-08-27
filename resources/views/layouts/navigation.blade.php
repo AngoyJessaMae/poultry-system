@@ -3,6 +3,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
+                <!-- Sidebar Hamburger -->
+                <div class="-me-2 flex items-center">
+                    <button @click="sidebarOpen = ! sidebarOpen" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
                 <!-- Hamburger -->
                 <div class="-me-2 flex items-center sm:hidden">
                     <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
@@ -31,7 +39,10 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                {{ __('Profile') }}
+                            </div>
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -40,7 +51,7 @@
 
                             <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault();
-                                                this.closest('form').submit();">
+                                                this.closest('form').submit();" class="bg-red-500 text-white hover:bg-red-600">
                                 {{ __('Log Out') }}
                             </x-dropdown-link>
                         </form>
@@ -72,6 +83,12 @@
             @else
                 <x-responsive-nav-link :href="route('worker.dashboard')" :active="request()->routeIs('worker.dashboard')">
                     {{ __('Dashboard') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('worker.stations.index')" :active="request()->routeIs('worker.stations.index')">
+                    {{ __('Stations') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('worker.batches.index')" :active="request()->routeIs('worker.batches.index')">
+                    {{ __('Batches') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('worker.feeding-logs.index')" :active="request()->routeIs('worker.feeding-logs.index')">
                     {{ __('Feeding') }}

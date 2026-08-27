@@ -2,61 +2,245 @@
 <html>
 <head>
     <title>Report</title>
+    <meta charset="UTF-8">
     <style>
-        body { font-family: sans-serif; }
-        h1 { text-align: center; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background-color: #f2f2f2; }
+        @page { 
+            margin: 1.5cm;
+            size: A4 landscape;
+        }
+        body { 
+            font-family: 'Helvetica', 'Arial', sans-serif; 
+            font-size: 9px;
+            line-height: 1.3;
+            margin: 0;
+            padding: 0;
+        }
+        h1 { 
+            text-align: center; 
+            font-size: 16px;
+            margin-top: 0.3cm;
+            margin-bottom: 0.8cm;
+            color: #1f2937;
+        }
+        h2 { 
+            font-size: 12px;
+            margin-top: 1cm;
+            margin-bottom: 0.4cm;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 0.2cm;
+            page-break-before: always;
+        }
+        h2:first-of-type {
+            page-break-before: avoid;
+        }
+        h3 {
+            font-size: 10px;
+            margin-top: 0.8cm;
+            margin-bottom: 0.3cm;
+            color: #4b5563;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 0.8cm;
+            font-size: 8.5px;
+        }
+        th, td { 
+            border: 1px solid #d1d5db; 
+            padding: 4px 6px; 
+            text-align: left;
+            word-wrap: break-word;
+        }
+        th { 
+            background-color: #f3f4f6; 
+            font-weight: bold;
+            color: #1f2937;
+        }
+        tr {
+            page-break-inside: avoid;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 0.4cm;
+            margin-bottom: 0.5cm;
+        }
+        .metric-card {
+            background: #f9fafb;
+            padding: 0.4cm;
+            border-radius: 3px;
+            border: 1px solid #e5e7eb;
+        }
+        .metric-label {
+            font-size: 8px;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+        .metric-value {
+            font-size: 12px;
+            font-weight: bold;
+            color: #111827;
+            margin-top: 0.15cm;
+        }
+        p {
+            margin: 0.3cm 0;
+            color: #6b7280;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
     <h1>Babia Poultry Farm Report</h1>
 
-    <h2>Analytics</h2>
+    <h2>Core Analytics</h2>
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Feed-to-Weight Ratio</div>
+            <div class="metric-value">{{ number_format($analytics['feedToWeightRatio'], 2) }}</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Mortality Rate</div>
+            <div class="metric-value">{{ number_format($analytics['mortalityRate'], 2) }}%</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Sales</div>
+            <div class="metric-value">₱{{ number_format($analytics['totalSales'], 2) }}</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Profit Difference</div>
+            <div class="metric-value" style="color: {{ $analytics['profitDifference'] >= 0 ? '#16a34a' : '#dc2626' }};">{{ number_format($analytics['profitDifference'], 2) }}%</div>
+        </div>
+    </div>
+
+    <h2>Overall Activity Summary</h2>
     <table>
+        @if(($filters['report_type'] ?? 'all') === 'all' || ($filters['report_type'] ?? '') === 'feeding')
         <tr>
-            <th>Feed-to-Weight Ratio</th>
-            <td>{{ number_format($analytics['feedToWeightRatio'], 2) }}</td>
+            <th>Total Feed Used</th>
+            <td>{{ number_format($analytics['totalFeedUsed'], 2) }} kg</td>
+            <th>Feeding Logs</th>
+            <td>{{ $analytics['totalFeedingLogs'] }}</td>
+            @if(($filters['report_type'] ?? '') === 'feeding')
+            <th>Active Workers</th>
+            <td>{{ $analytics['uniqueWorkers'] }}</td>
+            @endif
         </tr>
+        @endif
+        @if(($filters['report_type'] ?? 'all') === 'all' || ($filters['report_type'] ?? '') === 'growth')
         <tr>
-            <th>Mortality Rate</th>
-            <td>{{ number_format($analytics['mortalityRate'], 2) }}%</td>
+            <th>Growth Records</th>
+            <td>{{ $analytics['totalGrowthRecords'] }}</td>
         </tr>
+        @endif
+        @if(($filters['report_type'] ?? 'all') === 'all' || ($filters['report_type'] ?? '') === 'mortality')
         <tr>
-            <th>Total Sales</th>
-            <td>₱{{ number_format($analytics['totalSales'], 2) }}</td>
+            <th>Mortality Records</th>
+            <td>{{ $analytics['totalMortalityRecords'] }}</td>
         </tr>
+        @endif
+        @if(($filters['report_type'] ?? 'all') === 'all' || ($filters['report_type'] ?? '') === 'sales')
         <tr>
-            <th>Profit Difference</th>
-            <td style="color: {{ $analytics['profitDifference'] >= 0 ? 'green' : 'red' }};">{{ number_format($analytics['profitDifference'], 2) }}%</td>
+            <th>Sales Records</th>
+            <td>{{ $analytics['totalSalesRecords'] }}</td>
         </tr>
+        @endif
+        @if(($filters['report_type'] ?? 'all') === 'all')
+        <tr>
+            <th>Active Workers</th>
+            <td>{{ $analytics['uniqueWorkers'] }}</td>
+        </tr>
+        @endif
     </table>
 
-    <h2>Data</h2>
+    @if(($filters['report_type'] ?? 'all') === 'all' || ($filters['report_type'] ?? '') === 'feeding')
+    <h2>Worker Feeding Activity</h2>
+    @if($analytics['workerFeedingActivity']->isEmpty())
+        <p>No feeding activity recorded for the selected period.</p>
+    @else
+        <table>
+            <thead>
+                <tr>
+                    <th>Worker Name</th>
+                    <th>Total Feedings</th>
+                    <th>Total Feed Distributed (kg)</th>
+                    <th>Average Feed per Feeding (kg)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($analytics['workerFeedingActivity'] as $worker)
+                <tr>
+                    <td>{{ $worker->worker_name }}</td>
+                    <td>{{ $worker->total_feedings }}</td>
+                    <td>{{ number_format($worker->total_feed_kg, 2) }}</td>
+                    <td>{{ number_format($worker->total_feed_kg / $worker->total_feedings, 2) }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+    @endif
+
+    <h2>Detailed Records</h2>
     @if($filters['report_type'] === 'all')
         @foreach($data as $type => $records)
-            <h3>{{ ucfirst($type) }}</h3>
-            @if($records->isEmpty())
-                <p>No data for this period.</p>
-            @else
+            @if(!$records->isEmpty())
+                <h3>{{ ucfirst($type) }} Records</h3>
                 <table>
                     <thead>
                         <tr>
-                            @foreach(array_keys($records->first()->toArray()) as $key)
-                                <th>{{ ucfirst(str_replace('_', ' ', $key)) }}</th>
-                            @endforeach
+                            @if($type === 'feeding')
+                                <th>Date Fed</th>
+                                <th>Worker</th>
+                                <th>Station</th>
+                                <th>Batch</th>
+                                <th>Feed (kg)</th>
+                            @elseif($type === 'growth')
+                                <th>Date Recorded</th>
+                                <th>Batch</th>
+                                <th>Avg Weight (g)</th>
+                            @elseif($type === 'mortality')
+                                <th>Date</th>
+                                <th>Station</th>
+                                <th>Batch</th>
+                                <th>Count</th>
+                                <th>Cause</th>
+                            @elseif($type === 'sales')
+                                <th>Sale Date</th>
+                                <th>Batch</th>
+                                <th>Heads Sold</th>
+                                <th>Total Amount</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($records as $record)
                             <tr>
-                                @foreach($record->toArray() as $value)
-                                    <td>{{ $value }}</td>
-                                @endforeach
+                                @if($type === 'feeding')
+                                    <td>{{ $record->fed_at->format('Y-m-d') ?? 'N/A' }}</td>
+                                    <td>{{ $record->user->name ?? 'N/A' }}</td>
+                                    <td>{{ $record->station->name ?? 'N/A' }}</td>
+                                    <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
+                                    <td>{{ number_format($record->quantity_kg ?? 0, 2) }}</td>
+                                @elseif($type === 'growth')
+                                    <td>{{ $record->recorded_date->format('Y-m-d') ?? 'N/A' }}</td>
+                                    <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
+                                    <td>{{ number_format($record->average_weight_g ?? 0, 2) }}</td>
+                                @elseif($type === 'mortality')
+                                    <td>{{ $record->mortality_date->format('Y-m-d') ?? 'N/A' }}</td>
+                                    <td>{{ $record->station->name ?? 'N/A' }}</td>
+                                    <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
+                                    <td>{{ $record->count ?? 0 }}</td>
+                                    <td>{{ $record->suspected_cause ?? 'N/A' }}</td>
+                                @elseif($type === 'sales')
+                                    <td>{{ $record->sale_date->format('Y-m-d') ?? 'N/A' }}</td>
+                                    <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
+                                    <td>{{ $record->heads_sold ?? 0 }}</td>
+                                    <td>₱{{ number_format($record->total_amount ?? 0, 2) }}</td>
+                                @endif
                             </tr>
                         @endforeach
-                    </tbody>
+                     </tbody>
                 </table>
             @endif
         @endforeach
@@ -67,18 +251,56 @@
             <table>
                 <thead>
                     <tr>
-                        @foreach(array_keys($data->first()->toArray()) as $key)
-                            <th>{{ ucfirst(str_replace('_', ' ', $key)) }}</th>
-                        @endforeach
+                        @if($filters['report_type'] === 'feeding')
+                            <th style="width: 15%;">Date Fed</th>
+                            <th style="width: 25%;">Worker</th>
+                            <th style="width: 20%;">Station</th>
+                            <th style="width: 20%;">Batch</th>
+                            <th style="width: 20%;">Feed (kg)</th>
+                        @elseif($filters['report_type'] === 'growth')
+                            <th style="width: 25%;">Date Recorded</th>
+                            <th style="width: 40%;">Batch</th>
+                            <th style="width: 35%;">Avg Weight (g)</th>
+                        @elseif($filters['report_type'] === 'mortality')
+                            <th style="width: 20%;">Date</th>
+                            <th style="width: 20%;">Station</th>
+                            <th style="width: 20%;">Batch</th>
+                            <th style="width: 15%;">Count</th>
+                            <th style="width: 25%;">Cause</th>
+                        @elseif($filters['report_type'] === 'sales')
+                            <th style="width: 20%;">Sale Date</th>
+                            <th style="width: 30%;">Batch</th>
+                            <th style="width: 20%;">Heads Sold</th>
+                            <th style="width: 30%;">Total Amount</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($data as $record)
-                        <tr>
-                            @foreach($record->toArray() as $value)
-                                <td>{{ $value }}</td>
-                            @endforeach
-                        </tr>
+                    <tr>
+                        @if($filters['report_type'] === 'feeding')
+                            <td>{{ $record->fed_at->format('Y-m-d') }}</td>
+                            <td>{{ $record->user->name ?? 'N/A' }}</td>
+                            <td>{{ $record->station->name ?? 'N/A' }}</td>
+                            <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
+                            <td>{{ number_format($record->quantity_kg, 2) }}</td>
+                        @elseif($filters['report_type'] === 'growth')
+                            <td>{{ $record->recorded_date->format('Y-m-d') }}</td>
+                            <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
+                            <td>{{ number_format($record->average_weight_g, 2) }}</td>
+                        @elseif($filters['report_type'] === 'mortality')
+                            <td>{{ $record->mortality_date->format('Y-m-d') }}</td>
+                            <td>{{ $record->station->name ?? 'N/A' }}</td>
+                            <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
+                            <td>{{ $record->count }}</td>
+                            <td>{{ $record->suspected_cause ?? 'N/A' }}</td>
+                        @elseif($filters['report_type'] === 'sales')
+                            <td>{{ $record->sale_date->format('Y-m-d') }}</td>
+                            <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
+                            <td>{{ $record->heads_sold }}</td>
+                            <td>₱{{ number_format($record->total_amount, 2) }}</td>
+                        @endif
+                    </tr>
                     @endforeach
                 </tbody>
             </table>

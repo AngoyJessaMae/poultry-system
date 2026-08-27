@@ -24,11 +24,29 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        // Check if credentials are valid first
+        if (!Auth::attempt($credentials)) {
+            return back()->withErrors([
+                'email' => 'The provided credentials do not match our records.',
+            ]);
+        }
+
+        $user = Auth::user();
+        
+        // Check if user is active before allowing login
+        if (!$user->is_active) {
+            Auth::logout();
+            return back()->withErrors([
+                'email' => 'Your account is still pending manager approval. Please wait for an administrator to activate your account before logging in.',
+            ]);
+        }
 
         $request->session()->regenerate();
-
-        $user = $request->user();
 
         if ($user->isManager()) {
             return redirect()->intended(route('manager.dashboard', absolute: false));

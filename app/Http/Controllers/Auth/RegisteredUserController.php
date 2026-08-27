@@ -40,12 +40,13 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'worker',
+            'is_active' => false, // Self-registered workers need manager approval
         ]);
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false));
+        // Don't auto-login inactive users - they need approval first
+        return redirect()->route('login')->with('success', 'Your registration has been submitted successfully. A manager will review and activate your account. You will be able to log in once your account is activated.');
     }
 }
