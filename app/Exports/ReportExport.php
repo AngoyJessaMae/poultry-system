@@ -33,18 +33,18 @@ class ReportExport implements FromView
     {
         // Feed-to-weight ratio
         $totalFeed = FeedingLog::query()
-            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('fed_at', '>=', $date))
-            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('fed_at', '<=', $date))
+            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '>=', $date))
+            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '<=', $date))
             ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
             ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
-            ->sum('quantity_kg');
+            ->sum('quantity');
 
         $feedingRecords = FeedingLog::query()
-            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('fed_at', '>=', $date))
-            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('fed_at', '<=', $date))
+            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '>=', $date))
+            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '<=', $date))
             ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
             ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
-            ->orderBy('fed_at')
+            ->orderBy('feeding_time')
             ->get();
 
         $growthRecords = \App\Models\GrowthRecord::query()
@@ -94,8 +94,8 @@ class ReportExport implements FromView
         // First get all feeding logs, then aggregate in PHP to avoid MySQL ONLY_FULL_GROUP_BY issues
         $allFeedingLogs = FeedingLog::query()
             ->with('user') // Eager load user relationship
-            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('fed_at', '>=', $date))
-            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('fed_at', '<=', $date))
+            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '>=', $date))
+            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '<=', $date))
             ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
             ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
             ->get();
@@ -111,7 +111,7 @@ class ReportExport implements FromView
                 'worker_id' => $workerId,
                 'worker_name' => $workerName,
                 'total_feedings' => $logs->count(),
-                'total_feed_kg' => $logs->sum('quantity_kg')
+                'total_feed_kg' => $logs->sum('quantity')
             ];
         })->sortByDesc('total_feedings')->values();
 
@@ -163,7 +163,7 @@ class ReportExport implements FromView
             return $query
                 ->when($filters['start_date'] ?? null, function ($q, $date) use ($reportType) {
                     match($reportType) {
-                        'feeding' => $q->where('fed_at', '>=', $date),
+                        'feeding' => $q->where('feeding_time', '>=', $date),
                         'growth' => $q->where('recorded_date', '>=', $date),
                         'mortality' => $q->where('mortality_date', '>=', $date),
                         'sales' => $q->where('sale_date', '>=', $date),
@@ -172,7 +172,7 @@ class ReportExport implements FromView
                 })
                 ->when($filters['end_date'] ?? null, function ($q, $date) use ($reportType) {
                     match($reportType) {
-                        'feeding' => $q->where('fed_at', '<=', $date),
+                        'feeding' => $q->where('feeding_time', '<=', $date),
                         'growth' => $q->where('recorded_date', '<=', $date),
                         'mortality' => $q->where('mortality_date', '<=', $date),
                         'sales' => $q->where('sale_date', '<=', $date),
@@ -201,10 +201,10 @@ class ReportExport implements FromView
         }
 
         return collect([
-            'feeding' => FeedingLog::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('created_at', '>=', $date))->get(),
-            'growth' => GrowthRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('created_at', '>=', $date))->get(),
-            'mortality' => MortalityRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('created_at', '>=', $date))->get(),
-            'sales' => Sale::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('created_at', '>=', $date))->get(),
+            'feeding' => FeedingLog::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '>=', $date))->get(),
+            'growth' => GrowthRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '>=', $date))->get(),
+            'mortality' => MortalityRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('mortality_date', '>=', $date))->get(),
+            'sales' => Sale::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('sale_date', '>=', $date))->get(),
         ]);
     }
 }
