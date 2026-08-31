@@ -7,6 +7,8 @@ use App\Models\Batch;
 use App\Models\Sale;
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\DB;
+
 class SaleController extends Controller
 {
     public function index()
@@ -33,17 +35,27 @@ class SaleController extends Controller
     {
         $this->authorize('create', Sale::class);
         $data = $request->validated();
-        $data['user_id'] = auth()->id();
-        $sale = Sale::create($data);
 
-        // Decrement the batch's current quantity
-        $batch = Batch::find($sale->batch_id);
-        if ($batch) {
-            $batch->decrement('current_quantity', $sale->heads_sold);
+        try {
+            DB::transaction(function () use ($data) {
+                $batch = Batch::lockForUpdate()->find($data['batch_id']);
+
+                if (!$batch || $batch->current_quantity < $data['heads_sold']) {
+                    throw new \Exception('Not enough birds in the batch for this sale.');
+                }
+
+                $batch->decrement('current_quantity', $data['heads_sold']);
+
+                $saleData = $data;
+                $saleData['user_id'] = auth()->id();
+                Sale::create($saleData);
+            });
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['heads_sold' => $e->getMessage()]);
         }
 
         $route = auth()->user()->isManager() ? 'manager.sales.index' : 'worker.sales.index';
-        return redirect()->route($route);
+        return redirect()->route($route)->with('success', 'Sale recorded successfully.');
     }
 
     public function show(Sale $sale)
@@ -63,16 +75,46 @@ class SaleController extends Controller
     public function update(StoreSaleRequest $request, Sale $sale)
     {
         $this->authorize('update', $sale);
-        $sale->update($request->validated());
+
+        $originalHeadsSold = $sale->heads_sold;
+        $newHeadsSold = $request->validated()['heads_sold'];
+        $difference = $newHeadsSold - $originalHeadsSold;
+
+        try {
+            DB::transaction(function () use ($sale, $request, $difference) {
+                $batch = Batch::lockForUpdate()->find($sale->batch_id);
+
+                if ($difference > 0 && $batch->current_quantity < $difference) {
+                    throw new \Exception('Not enough birds in the batch to update this sale.');
+                }
+
+                $batch->decrement('current_quantity', $difference);
+
+                $sale->update($request->validated());
+            });
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['heads_sold' => $e->getMessage()]);
+        }
+
         $route = auth()->user()->isManager() ? 'manager.sales.index' : 'worker.sales.index';
-        return redirect()->route($route);
+        return redirect()->route($route)->with('success', 'Sale updated successfully.');
     }
 
     public function destroy(Sale $sale)
     {
         $this->authorize('delete', $sale);
-        $sale->delete();
+
+        try {
+            DB::transaction(function () use ($sale) {
+                $batch = Batch::lockForUpdate()->find($sale->batch_id);
+                $batch->increment('current_quantity', $sale->heads_sold);
+                $sale->delete();
+            });
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'An error occurred while deleting the sale.']);
+        }
+
         $route = auth()->user()->isManager() ? 'manager.sales.index' : 'worker.sales.index';
-        return redirect()->route($route);
+        return redirect()->route($route)->with('success', 'Sale deleted successfully.');
     }
 }

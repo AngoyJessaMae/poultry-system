@@ -11,8 +11,6 @@ class SaleObserver
      */
     public function created(Sale $sale): void
     {
-        $batch = $sale->batch;
-        $batch->current_quantity -= $sale->heads_sold;
-        $batch->save();
+        // Logic moved to SaleController to prevent double deduction.
     }
 }

@@ -19,6 +19,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch Code</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stage</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Station</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Quantity</th>
                                 <th scope="col" class="relative px-6 py-3">
@@ -30,11 +31,30 @@
                             @foreach($batches as $batch)
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap font-medium">{{ $batch->batch_code }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $bgColor = match($batch->growth_stage) {
+                                                'Chick' => 'bg-yellow-200',
+                                                'Grower' => 'bg-blue-200',
+                                                'Market-Ready' => 'bg-green-200',
+                                                'Underweight' => 'bg-red-200',
+                                                default => '',
+                                            };
+                                        @endphp
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $bgColor }}">
+                                            {{ $batch->growth_stage }}
+                                        </span>
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $batch->station->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $batch->current_quantity }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('worker.batches.show', $batch) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
                                         <a href="{{ route('worker.batches.edit', $batch) }}" class="text-indigo-600 hover:text-indigo-900 ml-4">Edit</a>
+                                        <form action="{{ route('worker.batches.destroy', $batch) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900 ml-4">Delete</button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach

@@ -13,14 +13,12 @@ return new class extends Migration
     {
         Schema::create('feeding_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('batch_id')->constrained();
-            $table->foreignId('station_id')->constrained();
-            $table->foreignId('user_id')->constrained();
-            $table->string('feeding_time_slot')->nullable();
-            $table->string('feed_type');
-            $table->decimal('quantity_kg', 8, 2);
-            $table->dateTime('fed_at');
-            $table->text('notes')->nullable();
+            $table->foreignId('batch_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('feed_type', 50);
+            $table->decimal('quantity', 6, 2);
+            $table->enum('method', ['Free Choice', 'Restricted']);
+            $table->dateTime('feeding_time');
             $table->timestamps();
         });
     }

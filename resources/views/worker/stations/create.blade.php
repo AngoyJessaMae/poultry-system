@@ -60,12 +60,6 @@
                                 {{ __('Save Station') }}
                             </x-primary-button>
                         </div>
-
-                        <div class="flex items-center justify-end mt-4">
-                            <x-primary-button class="ms-4">
-                                {{ __('Save Station') }}
-                            </x-primary-button>
-                        </div>
                     </form>
                 </div>
             </div>

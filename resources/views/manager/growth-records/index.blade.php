@@ -17,6 +17,9 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Average Weight (g)</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recorded by</th>
+                                <th scope="col" class="relative px-6 py-3">
+                                    <span class="sr-only">Actions</span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -26,6 +29,14 @@
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $record->batch->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $record->average_weight }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $record->user->name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="{{ route('manager.growth-records.edit', $record->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                        <form action="{{ route('manager.growth-records.destroy', $record->id) }}" method="POST" class="inline delete-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900 ml-4">Delete</button>
+                                        </form>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

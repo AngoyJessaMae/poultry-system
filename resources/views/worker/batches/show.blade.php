@@ -19,6 +19,7 @@
                         <p><strong>Station:</strong> {{ $batch->station->name }}</p>
                         <p><strong>Arrival Date:</strong> {{ $batch->arrival_date->format('Y-m-d') }}</p>
                         <p><strong>Age:</strong> {{ $batch->current_age }} days</p>
+                        <p><strong>Feeding Method:</strong> {{ str_replace('_', ' ', Str::title($batch->feeding_method)) }}</p>
                         <p><strong>Initial Quantity:</strong> {{ $batch->initial_quantity }}</p>
                         <p><strong>Current Quantity:</strong> {{ $batch->current_quantity }}</p>
                     </div>
@@ -71,10 +72,10 @@
                                             <p class="text-sm text-gray-500">
                                                 @switch(class_basename($item))
                                                     @case('FeedingLog')
-                                                        Fed {{ $item->quantity_fed }} kg of {{ $item->feed_type }}.
+                                                        Fed {{ $item->quantity }} kg of {{ $item->feed_type }}.
                                                         @break
                                                     @case('GrowthRecord')
-                                                        Average weight: {{ $item->average_weight }} g.
+                                                        Average weight: {{ number_format($item->avg_weight, 2) }} g.
                                                         @break
                                                     @case('HealthRecord')
                                                         Observation: {{ $item->observation }}.

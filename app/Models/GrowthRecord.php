@@ -32,6 +32,11 @@ class GrowthRecord extends Model
         'is_below_expected' => 'boolean',
     ];
 
+    public function getAvgWeightAttribute()
+    {
+        return $this->attributes['average_weight_grams'];
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

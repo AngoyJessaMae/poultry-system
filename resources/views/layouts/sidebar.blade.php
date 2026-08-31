@@ -10,7 +10,6 @@
             <a href="{{ route('manager.dashboard') }}" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-brand-red text-white">Dashboard</a>
             <a href="{{ route('manager.stations.index') }}" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-brand-red text-white">Stations</a>
             <a href="{{ route('manager.batches.index') }}" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-brand-red text-white">Batches</a>
-            <a href="{{ route('manager.feeding-schedules.index') }}" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-brand-red text-white">Feeding Schedules</a>
             <a href="{{ route('manager.users.index') }}" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-brand-red text-white">Users</a>
             <a href="{{ route('manager.reports.index') }}" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-brand-red text-white">Reports</a>
         @else

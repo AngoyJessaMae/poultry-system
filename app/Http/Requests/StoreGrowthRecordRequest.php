@@ -27,7 +27,6 @@ class StoreGrowthRecordRequest extends FormRequest
             'recorded_date' => 'required|date',
             'age_days' => 'required|integer|min:0',
             'average_weight_grams' => 'required|numeric|min:0',
-            'growth_stage' => ['required', Rule::in(['chick', 'grower', 'market_ready'])],
             'is_below_expected' => 'boolean',
             'notes' => 'nullable|string',
         ];

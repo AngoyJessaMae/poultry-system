@@ -46,18 +46,6 @@
                             <x-input-error :messages="$errors->get('age_days')" class="mt-2" />
                         </div>
 
-                        <!-- Growth Stage -->
-                        <div class="mt-4">
-                            <x-input-label for="growth_stage" :value="__('Growth Stage')" />
-                            <select id="growth_stage" name="growth_stage" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                                <option value="">Select a stage</option>
-                                <option value="chick" @if(old('growth_stage') == 'chick') selected @endif>Chick</option>
-                                <option value="grower" @if(old('growth_stage') == 'grower') selected @endif>Grower</option>
-                                <option value="market_ready" @if(old('growth_stage') == 'market_ready') selected @endif>Market Ready</option>
-                            </select>
-                            <x-input-error :messages="$errors->get('growth_stage')" class="mt-2" />
-                        </div>
-
                         <!-- Is Below Expected? -->
                         <div class="mt-4">
                             <label class="flex items-center">

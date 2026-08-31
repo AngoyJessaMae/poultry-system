@@ -33,8 +33,23 @@ class GrowthRecordController extends Controller
     {
         $this->authorize('create', GrowthRecord::class);
         $data = $request->validated();
+
+        // Calculate growth stage based on the submitted data
+        $age = (int) $data['age_days'];
+        $weightInKg = (float) $data['average_weight_grams'] / 1000;
+
+        $stage = 'Chick'; // Default stage
+        if ($age >= 26 && $weightInKg >= 1.3) {
+            $stage = 'Market-Ready';
+        } elseif ($age >= 11) {
+            $stage = 'Grower';
+        }
+
+        $data['growth_stage'] = $stage;
         $data['user_id'] = auth()->id();
+
         GrowthRecord::create($data);
+
         $route = auth()->user()->isManager() ? 'manager.growth-records.index' : 'worker.growth-records.index';
         return redirect()->route($route);
     }

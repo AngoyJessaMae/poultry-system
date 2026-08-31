@@ -7,12 +7,14 @@ use App\Models\FeedingLog;
 use App\Models\FeedingSchedule;
 use App\Models\MortalityRecord;
 use App\Models\Sale;
+use App\Traits\ManagesFeedingSchedules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    use ManagesFeedingSchedules;
     public function managerDashboard()
     {
         $totalActiveBatches = Batch::active()->count();
@@ -33,31 +35,7 @@ class DashboardController extends Controller
     public function workerDashboard()
     {
         $user = Auth::user();
-        $workerBatches = Batch::active()->pluck('id'); // Get all active batches for now
-
-        $missedFeedings = [];
-        $pendingFeedingSchedules = collect();
-
-        if ($workerBatches->isNotEmpty()) {
-            $schedules = FeedingSchedule::whereIn('batch_id', $workerBatches)
-                ->whereHas('batch', function ($query) {
-                    $query->where('feeding_method', '!=', 'unlimited');
-                })
-                ->with('batch.station') // Eager load batch and station
-                ->get();
-
-            foreach ($schedules as $schedule) {
-                $logExists = FeedingLog::where('feeding_schedule_id', $schedule->id)
-                    ->whereDate('created_at', today())
-                    ->exists();
-
-                if (!$logExists && now()->format('H:i:s') > $schedule->scheduled_time) {
-                    $missedFeedings[] = $schedule;
-                } elseif (!$logExists) {
-                    $pendingFeedingSchedules->push($schedule);
-                }
-            }
-        }
+        $activeBatches = Batch::with('station')->where('status', 'active')->get();
 
         $recentEntries = collect()
             ->concat($user->feedingLogs()->where('created_at', '>=', now()->subHours(24))->get())
@@ -66,6 +44,6 @@ class DashboardController extends Controller
             ->concat($user->mortalityRecords()->where('created_at', '>=', now()->subHours(24))->get())
             ->concat($user->sales()->where('created_at', '>=', now()->subHours(24))->get());
 
-        return view('worker.dashboard', compact('missedFeedings', 'pendingFeedingSchedules', 'recentEntries'));
+        return view('worker.dashboard', compact('activeBatches', 'recentEntries'));
     }
 }

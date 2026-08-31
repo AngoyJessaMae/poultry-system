@@ -108,22 +108,44 @@ class Batch extends Model
 
     public function getLatestAverageWeightAttribute(): ?float
     {
-        return $this->growthRecords()->latest('recorded_date')->first()->average_weight ?? null;
+        $latestRecord = $this->growthRecords()->orderBy('recorded_date', 'desc')->first();
+
+        if (!$latestRecord) {
+            return null;
+        }
+
+        // Convert grams to kilograms for consistent comparison
+        return (float) ($latestRecord->avg_weight / 1000);
     }
 
     public function getGrowthStageAttribute(): string
     {
-        $ageInDays = $this->current_age;
+        $age = $this->current_age;
+        $weight = $this->latest_average_weight;
 
-        if ($ageInDays >= 57) {
-            return 'Market Ready';
+        // Rule 1: Market-Ready (Primary check)
+        // Must be at least 26 days old and meet weight requirements.
+        if ($age >= 26 && $weight >= 1.3) {
+            return 'Market-Ready';
         }
 
-        if ($ageInDays >= 29) {
+        // Rule 2: Underweight
+        // If it's old enough to be Market-Ready but doesn't meet the weight, it's underweight.
+        if ($age >= 26 && $weight < 1.3) {
+            return 'Underweight';
+        }
+
+        // Rule 3: Grower
+        if ($age >= 11) {
             return 'Grower';
         }
 
-        return 'Chick';
+        // Rule 4: Chick (Default for young birds)
+        if ($age <= 10) {
+            return 'Chick';
+        }
+
+        return 'Unknown'; // Fallback
     }
 
     private function getExpectedWeightInKg(int $ageInDays): float

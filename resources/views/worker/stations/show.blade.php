@@ -34,15 +34,7 @@
                             <textarea id="description" name="description" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" disabled>{{ $station->description }}</textarea>
                         </div>
 
-                        <!-- Feeding Method -->
-                        <div class="mt-4">
-                            <x-input-label for="feeding_method" :value="__('Feeding Method')" />
-                            <select id="feeding_method" name="feeding_method" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" disabled>
-                                @foreach(\App\Enums\FeedingMethod::cases() as $method)
-                                    <option value="{{ $method->value }}" @if($station->feeding_method == $method) selected @endif>{{ str_replace('_', ' ', Str::title($method->name)) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+
                     </form>
                 </div>
             </div>

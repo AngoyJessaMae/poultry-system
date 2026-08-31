@@ -8,45 +8,30 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            @if(!empty($missedFeedings))
-                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
-                    <p class="font-bold">Missed Feedings</p>
-                    <ul class="mt-2 list-disc list-inside">
-                        @foreach($missedFeedings as $schedule)
-                            <li>
-                                <strong>{{ $schedule->batch->name }}</strong> ({{ $schedule->batch->station->name }})
-                                at {{ \Carbon\Carbon::parse($schedule->scheduled_time)->format('g:i A') }}
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 bg-white border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">Today's Feeding Schedule</h3>
+                    <h3 class="text-lg font-medium text-gray-900">Active Batches</h3>
                     <div class="mt-4 space-y-3">
-                        @forelse($pendingFeedingSchedules as $schedule)
+                        @forelse($activeBatches as $batch)
                             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                 <div>
-                                    <span class="font-semibold">{{ $schedule->batch->name }}</span>
-                                    <span class="text-sm text-gray-600">({{ $schedule->batch->station->name }}) - {{ \Carbon\Carbon::parse($schedule->scheduled_time)->format('g:i A') }}</span>
+                                    <span class="font-semibold">{{ $batch->name }}</span>
+                                    <span class="text-sm text-gray-600">({{ $batch->station->name }})</span>
                                 </div>
-                                <a href="{{ route('worker.feeding-logs.create', ['batch_id' => $schedule->batch_id]) }}" class="px-3 py-1 bg-green-500 text-white text-sm font-semibold rounded-md hover:bg-green-600 transition">
+                                <a href="{{ route('worker.batches.feeding-logs.create', $batch) }}" class="px-3 py-1 bg-green-500 text-white text-sm font-semibold rounded-md hover:bg-green-600 transition">
                                     Log Feed
                                 </a>
                             </div>
                         @empty
-                            <p>No pending feeding schedules for today.</p>
+                            <p>No active batches.</p>
                         @endforelse
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                <a href="{{ route('worker.feeding-logs.create') }}" class="bg-blue-500 text-white text-center font-bold py-4 px-6 rounded-lg hover:bg-blue-600 transition duration-300">
-                    Log Feeding
-                </a>
+
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 <a href="{{ route('worker.growth-records.create') }}" class="bg-green-500 text-white text-center font-bold py-4 px-6 rounded-lg hover:bg-green-600 transition duration-300">
                     Log Growth
                 </a>

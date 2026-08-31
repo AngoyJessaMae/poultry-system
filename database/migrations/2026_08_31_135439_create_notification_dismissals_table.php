@@ -11,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('feeding_schedules', function (Blueprint $table) {
+        Schema::create('notification_dismissals', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('station_id')->constrained()->onDelete('cascade');
-            $table->time('scheduled_time');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('batch_id')->constrained()->onDelete('cascade');
+            $table->string('schedule_time');
             $table->timestamps();
+
+            $table->unique(['user_id', 'batch_id', 'schedule_time']);
         });
     }
 
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('feeding_schedules');
+        Schema::dropIfExists('notification_dismissals');
     }
 };

@@ -39,6 +39,6 @@ class GrowthRecordPolicy
 
     public function delete(User $user, GrowthRecord $growthRecord)
     {
-        return $user->isManager();
+        return $user->isManager() || $growthRecord->user_id === $user->id;
     }
 }

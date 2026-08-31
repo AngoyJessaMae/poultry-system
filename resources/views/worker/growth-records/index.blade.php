@@ -37,7 +37,12 @@
                                     <td class="px-6 py-4 whitespace-nowrap capitalize">{{ $record->growth_stage }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $record->average_weight_grams }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <a href="{{ route('worker.growth-records.edit', $record) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                        <a href="{{ route('worker.growth-records.edit', $record->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                        <form action="{{ route('worker.growth-records.destroy', $record->id) }}" method="POST" class="inline delete-form">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900 ml-4">Delete</button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach

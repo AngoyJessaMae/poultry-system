@@ -15,19 +15,17 @@ class FeedingLog extends Model
 
     protected $fillable = [
         'batch_id',
-        'station_id',
         'user_id',
-        'feeding_schedule_id',
-        'feeding_time_slot',
         'feed_type',
-        'quantity_kg',
-        'fed_at',
+        'quantity',
+        'method',
+        'feeding_time',
         'notes',
     ];
 
     protected $casts = [
-        'fed_at' => 'datetime',
-        'quantity_kg' => 'decimal:2',
+        'feeding_time' => 'datetime',
+        'quantity' => 'decimal:2',
     ];
 
     public function batch(): BelongsTo
