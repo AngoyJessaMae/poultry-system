@@ -1,8 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Log Sale') }}
-        </h2>
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Log Sale') }}
+            </h2>
+            <a href="{{ route('worker.sales.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                {{ __('Back to Sales') }}
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-12">
@@ -17,7 +25,7 @@
                             <x-input-label for="batch_id" :value="__('Batch')" />
                             <select id="batch_id" name="batch_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
                                 <option value="">Select a batch</option>
-                                @foreach(\App\Models\Batch::where('current_quantity', '>', 0)->get() as $batch)
+                                @foreach($batches as $batch)
                                     <option value="{{ $batch->id }}">{{ $batch->batch_code }}</option>
                                 @endforeach
                             </select>
@@ -55,7 +63,7 @@
                         <!-- Total Amount -->
                         <div class="mt-4">
                             <x-input-label for="total_amount" :value="__('Total Amount (PHP)')" />
-                            <x-text-input id="total_amount" class="block mt-1 w-full" type="number" step="0.01" name="total_amount" :value="old('total_amount')" min="0" required />
+                            <x-text-input id="total_amount" class="block mt-1 w-full bg-gray-100" type="number" step="0.01" name="total_amount" :value="old('total_amount')" min="0" required readonly />
                             <x-input-error :messages="$errors->get('total_amount')" class="mt-2" />
                         </div>
 
@@ -67,9 +75,6 @@
                         </div>
 
                         <div class="flex items-center justify-end mt-4">
-                            <a href="{{ route('worker.sales.index') }}" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 me-4">
-                                {{ __('Cancel') }}
-                            </a>
                             <x-primary-button class="ms-4">
                                 {{ __('Save Sale') }}
                             </x-primary-button>
@@ -79,4 +84,22 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const totalWeightInput = document.getElementById('total_weight_kg');
+            const pricePerKgInput = document.getElementById('price_per_kg');
+            const totalAmountInput = document.getElementById('total_amount');
+
+            function calculateTotalAmount() {
+                const totalWeight = parseFloat(totalWeightInput.value) || 0;
+                const pricePerKg = parseFloat(pricePerKgInput.value) || 0;
+                const totalAmount = totalWeight * pricePerKg;
+                totalAmountInput.value = totalAmount.toFixed(2);
+            }
+
+            totalWeightInput.addEventListener('input', calculateTotalAmount);
+            pricePerKgInput.addEventListener('input', calculateTotalAmount);
+        });
+    </script>
 </x-app-layout>

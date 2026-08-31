@@ -13,11 +13,12 @@ class HealthRecord extends Model
     protected $fillable = [
         'batch_id',
         'user_id',
-        'record_type',
-        'description',
-        'medication_given',
-        'dosage',
-        'recorded_at',
+        'recorded_date',
+        'observation',
+        'medication_name',
+        'dosage_amount',
+        'dosage_unit',
+        'notes',
     ];
 
     public function batch(): BelongsTo
@@ -31,6 +32,6 @@ class HealthRecord extends Model
     }
 
     protected $casts = [
-        'recorded_at' => 'datetime',
+        'recorded_date' => 'datetime',
     ];
 }

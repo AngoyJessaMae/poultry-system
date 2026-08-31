@@ -17,6 +17,7 @@ class FeedingLog extends Model
         'batch_id',
         'station_id',
         'user_id',
+        'feeding_schedule_id',
         'feeding_time_slot',
         'feed_type',
         'quantity_kg',

@@ -31,8 +31,8 @@ class StationPolicy
      */
     public function create(User $user): bool
     {
-        // Only managers can create stations
-        return $user->isManager();
+        // Both managers and workers can create stations
+        return $user->isManager() || $user->isWorker();
     }
 
     /**
@@ -40,8 +40,8 @@ class StationPolicy
      */
     public function update(User $user, Station $station): bool
     {
-        // Only managers can update stations
-        return $user->isManager();
+        // Both managers and workers can update stations
+        return $user->isManager() || $user->isWorker();
     }
 
     /**

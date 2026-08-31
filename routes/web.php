@@ -11,6 +11,7 @@ use App\Http\Controllers\MortalityRecordController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\FeedingScheduleController;
 use Illuminate\Support\Facades\Route;
 
 // 1. Guest routes (handled by Breeze)
@@ -41,6 +42,7 @@ Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')
     Route::resource('stations', StationController::class);
     Route::resource('batches', BatchController::class);
     Route::resource('users', UserController::class);
+    Route::resource('feeding-schedules', FeedingScheduleController::class);
     Route::patch('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate'); // Route to activate pending workers
 
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
@@ -64,6 +66,7 @@ Route::middleware(['auth', 'role:worker'])->prefix('worker')->name('worker.')->g
     Route::resource('batches', BatchController::class);
 
     Route::resource('feeding-logs', FeedingLogController::class)->except(['destroy']);
+    Route::post('feeding-logs/from-schedule', [FeedingLogController::class, 'storeFromSchedule'])->name('feeding-logs.storeFromSchedule');
     Route::resource('growth-records', GrowthRecordController::class)->except(['destroy']);
     Route::resource('health-records', HealthRecordController::class)->except(['destroy']);
     Route::resource('mortality-records', MortalityRecordController::class)->except(['destroy']);

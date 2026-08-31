@@ -1,8 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Log Health Record') }}
-        </h2>
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Log Health Record') }}
+            </h2>
+            <a href="{{ route('worker.health-records.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                {{ __('Back to Health Records') }}
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-12">
@@ -17,58 +25,56 @@
                             <x-input-label for="batch_id" :value="__('Batch')" />
                             <select id="batch_id" name="batch_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                 <option value="">Select a batch</option>
-                                @foreach(\App\Models\Batch::where('current_quantity', '>', 0)->get() as $batch)
+                                @foreach($batches as $batch)
                                     <option value="{{ $batch->id }}">{{ $batch->batch_code }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('batch_id')" class="mt-2" />
                         </div>
 
-                        <!-- Record Type -->
+                        <!-- Recorded Date -->
                         <div class="mt-4">
-                            <x-input-label for="record_type" :value="__('Record Type')" />
-                            <select id="record_type" name="record_type" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                                <option value="">Select a type</option>
-                                <option value="symptom" @if(old('record_type') == 'symptom') selected @endif>Symptom</option>
-                                <option value="diagnosis" @if(old('record_type') == 'diagnosis') selected @endif>Diagnosis</option>
-                                <option value="medication" @if(old('record_type') == 'medication') selected @endif>Medication</option>
-                                <option value="recommendation" @if(old('record_type') == 'recommendation') selected @endif>Recommendation</option>
-                            </select>
-                            <x-input-error :messages="$errors->get('record_type')" class="mt-2" />
+                            <x-input-label for="recorded_date" :value="__('Recorded Date')" />
+                            <x-text-input id="recorded_date" class="block mt-1 w-full" type="date" name="recorded_date" :value="old('recorded_date', now()->format('Y-m-d'))" required />
+                            <x-input-error :messages="$errors->get('recorded_date')" class="mt-2" />
                         </div>
 
-                        <!-- Recorded At -->
+                        <!-- Observation -->
                         <div class="mt-4">
-                            <x-input-label for="recorded_at" :value="__('Recorded Date & Time')" />
-                            <x-text-input id="recorded_at" class="block mt-1 w-full" type="datetime-local" name="recorded_at" :value="old('recorded_at', now()->format('Y-m-d\TH:i'))" required />
-                            <x-input-error :messages="$errors->get('recorded_at')" class="mt-2" />
+                            <x-input-label for="observation" :value="__('Observation')" />
+                            <textarea id="observation" name="observation" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>{{ old('observation') }}</textarea>
+                            <x-input-error :messages="$errors->get('observation')" class="mt-2" />
                         </div>
 
-                        <!-- Description -->
+                        <!-- Medication Name (Optional) -->
                         <div class="mt-4">
-                            <x-input-label for="description" :value="__('Description / Observation')" />
-                            <textarea id="description" name="description" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>{{ old('description') }}</textarea>
-                            <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                            <x-input-label for="medication_name" :value="__('Medication Name (Optional)')" />
+                            <x-text-input id="medication_name" class="block mt-1 w-full" type="text" name="medication_name" :value="old('medication_name')" />
+                            <x-input-error :messages="$errors->get('medication_name')" class="mt-2" />
                         </div>
 
-                        <!-- Medication Given (Optional) -->
+                        <!-- Dosage Amount (Optional) -->
                         <div class="mt-4">
-                            <x-input-label for="medication_given" :value="__('Medication Given (Optional)')" />
-                            <x-text-input id="medication_given" class="block mt-1 w-full" type="text" name="medication_given" :value="old('medication_given')" />
-                            <x-input-error :messages="$errors->get('medication_given')" class="mt-2" />
+                            <x-input-label for="dosage_amount" :value="__('Dosage Amount (Optional)')" />
+                            <x-text-input id="dosage_amount" class="block mt-1 w-full" type="text" name="dosage_amount" :value="old('dosage_amount')" />
+                            <x-input-error :messages="$errors->get('dosage_amount')" class="mt-2" />
                         </div>
 
-                        <!-- Dosage (Optional) -->
+                        <!-- Dosage Unit (Optional) -->
                         <div class="mt-4">
-                            <x-input-label for="dosage" :value="__('Dosage (Optional)')" />
-                            <x-text-input id="dosage" class="block mt-1 w-full" type="text" name="dosage" :value="old('dosage')" />
-                            <x-input-error :messages="$errors->get('dosage')" class="mt-2" />
+                            <x-input-label for="dosage_unit" :value="__('Dosage Unit (Optional)')" />
+                            <x-text-input id="dosage_unit" class="block mt-1 w-full" type="text" name="dosage_unit" :value="old('dosage_unit')" />
+                            <x-input-error :messages="$errors->get('dosage_unit')" class="mt-2" />
+                        </div>
+
+                        <!-- Notes (Optional) -->
+                        <div class="mt-4">
+                            <x-input-label for="notes" :value="__('Notes (Optional)')" />
+                            <textarea id="notes" name="notes" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('notes') }}</textarea>
+                            <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                         </div>
 
                         <div class="flex items-center justify-end mt-4">
-                            <a href="{{ route('worker.health-records.index') }}" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                {{ __('Cancel') }}
-                            </a>
                             <x-primary-button class="ms-4">
                                 {{ __('Save Record') }}
                             </x-primary-button>

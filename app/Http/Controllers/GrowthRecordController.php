@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreGrowthRecordRequest;
+use App\Models\Batch;
 use App\Models\GrowthRecord;
 use Illuminate\Http\Request;
 
@@ -23,8 +24,9 @@ class GrowthRecordController extends Controller
     public function create()
     {
         $this->authorize('create', GrowthRecord::class);
+        $batches = Batch::where('status', 'active')->get();
         $view = auth()->user()->isManager() ? 'manager.growth-records.create' : 'worker.growth-records.create';
-        return view($view);
+        return view($view, compact('batches'));
     }
 
     public function store(StoreGrowthRecordRequest $request)

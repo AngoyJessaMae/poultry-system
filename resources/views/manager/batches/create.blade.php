@@ -1,8 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Add New Batch') }}
-        </h2>
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Add New Batch') }}
+            </h2>
+            <a href="{{ route('manager.batches.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                {{ __('Back to Batches') }}
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-12">
@@ -55,9 +63,9 @@
                         <div class="mt-4">
                             <x-input-label for="feeding_method" :value="__('Feeding Method')" />
                             <select id="feeding_method" name="feeding_method" class="block mt-1 w-full border-gray-300 focus:border-brand-orange focus:ring-brand-orange rounded-md shadow-sm">
+                                <option value="unlimited" {{ old('feeding_method') == 'unlimited' ? 'selected' : '' }}>Unlimited</option>
                                 <option value="twice_daily" {{ old('feeding_method') == 'twice_daily' ? 'selected' : '' }}>Twice Daily</option>
                                 <option value="four_times_daily" {{ old('feeding_method') == 'four_times_daily' ? 'selected' : '' }}>Four Times Daily</option>
-                                <option value="unlimited" {{ old('feeding_method') == 'unlimited' ? 'selected' : '' }}>Unlimited</option>
                             </select>
                             <x-input-error :messages="$errors->get('feeding_method')" class="mt-2" />
                         </div>
@@ -74,9 +82,6 @@
                         </div>
 
                         <div class="flex items-center justify-end mt-4">
-                            <a href="{{ route('manager.batches.index') }}" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-orange">
-                                {{ __('Cancel') }}
-                            </a>
                             <x-primary-button class="ms-4">
                                 {{ __('Save Batch') }}
                             </x-primary-button>

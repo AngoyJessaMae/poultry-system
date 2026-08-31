@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSaleRequest;
+use App\Models\Batch;
 use App\Models\Sale;
 use Illuminate\Http\Request;
 
@@ -23,8 +24,9 @@ class SaleController extends Controller
     public function create()
     {
         $this->authorize('create', Sale::class);
+        $batches = Batch::where('status', 'active')->get();
         $view = auth()->user()->isManager() ? 'manager.sales.create' : 'worker.sales.create';
-        return view($view);
+        return view($view, compact('batches'));
     }
 
     public function store(StoreSaleRequest $request)
@@ -32,7 +34,14 @@ class SaleController extends Controller
         $this->authorize('create', Sale::class);
         $data = $request->validated();
         $data['user_id'] = auth()->id();
-        Sale::create($data);
+        $sale = Sale::create($data);
+
+        // Decrement the batch's current quantity
+        $batch = Batch::find($sale->batch_id);
+        if ($batch) {
+            $batch->decrement('current_quantity', $sale->heads_sold);
+        }
+
         $route = auth()->user()->isManager() ? 'manager.sales.index' : 'worker.sales.index';
         return redirect()->route($route);
     }

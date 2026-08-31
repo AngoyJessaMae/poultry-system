@@ -1,8 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Batch Details') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Batch Details') }}
+            </h2>
+            <a href="{{ route('worker.batches.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                Back to Batches
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-12">
@@ -22,6 +27,26 @@
 
             <div class="mt-8 bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Movement History</h3>
+                    <ul class="divide-y divide-gray-200 mt-4">
+                        @forelse($batch->movements as $movement)
+                            <li class="py-4">
+                                <p class="text-sm text-gray-700">
+                                    Moved from <span class="font-medium">{{ $movement->fromStation->name ?? 'N/A' }}</span>
+                                    to <span class="font-medium">{{ $movement->toStation->name ?? 'N/A' }}</span>
+                                    by <span class="font-medium">{{ $movement->user->name ?? 'System' }}</span>
+                                </p>
+                                <p class="text-sm text-gray-500">{{ $movement->moved_at->format('M d, Y g:i A') }}</p>
+                            </li>
+                        @empty
+                            <p>No movement history for this batch.</p>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-8 bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 bg-white border-b border-gray-200">
                     <h3 class="text-lg font-medium text-gray-900">Batch Timeline</h3>
                     <div class="mt-4">
                         @php
@@ -31,6 +56,7 @@
                                 ->concat($batch->healthRecords)
                                 ->concat($batch->mortalityRecords)
                                 ->concat($batch->sales)
+                                ->concat($batch->movements)
                                 ->sortByDesc('created_at');
                         @endphp
                         <ul class="divide-y divide-gray-200">
@@ -58,6 +84,9 @@
                                                         @break
                                                     @case('Sale')
                                                         {{ $item->heads_sold }} heads sold for ${{ number_format($item->total_amount, 2) }}.
+                                                        @break
+                                                    @case('BatchMovement')
+                                                        Moved from {{ $item->fromStation->name ?? 'N/A' }} to {{ $item->toStation->name ?? 'N/A' }}.
                                                         @break
                                                 @endswitch
                                             </p>

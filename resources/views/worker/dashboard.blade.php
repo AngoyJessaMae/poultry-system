@@ -13,7 +13,10 @@
                     <p class="font-bold">Missed Feedings</p>
                     <ul class="mt-2 list-disc list-inside">
                         @foreach($missedFeedings as $schedule)
-                            <li>{{ $schedule->station->name }} at {{ \Carbon\Carbon::parse($schedule->scheduled_time)->format('g:i A') }}</li>
+                            <li>
+                                <strong>{{ $schedule->batch->name }}</strong> ({{ $schedule->batch->station->name }})
+                                at {{ \Carbon\Carbon::parse($schedule->scheduled_time)->format('g:i A') }}
+                            </li>
                         @endforeach
                     </ul>
                 </div>
@@ -22,16 +25,21 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 bg-white border-b border-gray-200">
                     <h3 class="text-lg font-medium text-gray-900">Today's Feeding Schedule</h3>
-                    <ul class="mt-4 space-y-2">
+                    <div class="mt-4 space-y-3">
                         @forelse($pendingFeedingSchedules as $schedule)
-                            <li class="flex items-center">
-                                <input type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                                <span class="ml-3 text-gray-700">{{ $schedule->station->name }} - {{ \Carbon\Carbon::parse($schedule->scheduled_time)->format('g:i A') }}</span>
-                            </li>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <span class="font-semibold">{{ $schedule->batch->name }}</span>
+                                    <span class="text-sm text-gray-600">({{ $schedule->batch->station->name }}) - {{ \Carbon\Carbon::parse($schedule->scheduled_time)->format('g:i A') }}</span>
+                                </div>
+                                <a href="{{ route('worker.feeding-logs.create', ['batch_id' => $schedule->batch_id]) }}" class="px-3 py-1 bg-green-500 text-white text-sm font-semibold rounded-md hover:bg-green-600 transition">
+                                    Log Feed
+                                </a>
+                            </div>
                         @empty
-                            <li>No feeding schedules for today.</li>
+                            <p>No pending feeding schedules for today.</p>
                         @endforelse
-                    </ul>
+                    </div>
                 </div>
             </div>
 

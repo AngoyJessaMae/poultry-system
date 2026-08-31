@@ -11,12 +11,12 @@ class FeedingSchedule extends Model
     use HasFactory;
 
     protected $fillable = [
-        'station_id',
+        'batch_id',
         'scheduled_time',
     ];
 
-    public function station(): BelongsTo
+    public function batch(): BelongsTo
     {
-        return $this->belongsTo(Station::class);
+        return $this->belongsTo(Batch::class);
     }
 }

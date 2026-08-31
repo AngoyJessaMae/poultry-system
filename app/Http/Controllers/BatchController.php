@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateBatchRequest;
 use App\Http\Requests\StoreBatchRequest;
 use App\Models\Batch;
 use Illuminate\Http\Request;
@@ -12,9 +13,6 @@ class BatchController extends Controller
     {
         $this->authorize('viewAny', Batch::class);
         $query = Batch::with('station', 'creator');
-        if (auth()->user()->isWorker()) {
-            $query->where('created_by', auth()->id());
-        }
         $batches = $query->get();
         $view = auth()->user()->isManager() ? 'manager.batches.index' : 'worker.batches.index';
         return view($view, compact('batches'));
@@ -52,7 +50,7 @@ class BatchController extends Controller
         return view($view, compact('batch'));
     }
 
-    public function update(StoreBatchRequest $request, Batch $batch)
+    public function update(UpdateBatchRequest $request, Batch $batch)
     {
         $this->authorize('update', $batch);
         $batch->update($request->validated());

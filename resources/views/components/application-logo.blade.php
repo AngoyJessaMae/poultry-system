@@ -6,7 +6,7 @@
 @endphp
 
 @if(isset($customLogo) && $customLogo)
-    <img src="{{ asset('images/logo.png') }}" alt="Poultry System Logo" {{ $attributes->merge(['class' => 'w-24 h-24 object-contain']) }}>
+    <img src="{{ asset('images/logo.png') }}" alt="Poultry System Logo" {{ $attributes->merge(['class' => 'w-48 h-auto object-contain']) }}>
 @else
     <!-- Fallback: Default logo until you add your custom one -->
     <svg viewBox="0 0 316 316" xmlns="http://www.w3.org/2000/svg" {{ $attributes }}>

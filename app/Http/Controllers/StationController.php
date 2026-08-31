@@ -53,23 +53,6 @@ class StationController extends Controller
         $this->authorize('update', $station);
         $station->update($request->validated());
 
-        $station->feedingSchedules()->delete();
-
-        $method = FeedingMethod::from($request->feeding_method);
-
-        $times = match ($method) {
-            FeedingMethod::TWICE_DAILY => ['07:00', '19:00'],
-            FeedingMethod::FOUR_TIMES_DAILY => ['06:00', '10:00', '14:00', '18:00'],
-            default => [],
-        };
-
-        foreach ($times as $time) {
-            FeedingSchedule::create([
-                'station_id' => $station->id,
-                'scheduled_time' => $time,
-            ]);
-        }
-
         $route = auth()->user()->isManager() ? 'manager.stations.index' : 'worker.stations.index';
         return redirect()->route($route);
     }

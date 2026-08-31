@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('role')->default('worker');
-            $table->boolean('is_active')->default(false);
+        Schema::table('feeding_logs', function (Blueprint $table) {
+            $table->foreignId('feeding_schedule_id')->nullable()->constrained()->onDelete('set null');
         });
     }
 
@@ -22,8 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['role', 'is_active']);
+        Schema::table('feeding_logs', function (Blueprint $table) {
+            $table->dropForeign(['feeding_schedule_id']);
+            $table->dropColumn('feeding_schedule_id');
         });
     }
 };

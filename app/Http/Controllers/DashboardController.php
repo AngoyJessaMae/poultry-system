@@ -9,6 +9,7 @@ use App\Models\MortalityRecord;
 use App\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -32,24 +33,27 @@ class DashboardController extends Controller
     public function workerDashboard()
     {
         $user = Auth::user();
-        // Temporary fix until we add station assignment to workers - get all stations for now
-        $workerStations = \App\Models\Station::pluck('id');
+        $workerBatches = Batch::active()->pluck('id'); // Get all active batches for now
 
         $missedFeedings = [];
         $pendingFeedingSchedules = collect();
-        if ($workerStations->isNotEmpty()) {
-            $schedules = FeedingSchedule::whereIn('station_id', $workerStations)->get();
+
+        if ($workerBatches->isNotEmpty()) {
+            $schedules = FeedingSchedule::whereIn('batch_id', $workerBatches)
+                ->whereHas('batch', function ($query) {
+                    $query->where('feeding_method', '!=', 'unlimited');
+                })
+                ->with('batch.station') // Eager load batch and station
+                ->get();
 
             foreach ($schedules as $schedule) {
-                $logExists = FeedingLog::where('station_id', $schedule->station_id)
+                $logExists = FeedingLog::where('feeding_schedule_id', $schedule->id)
                     ->whereDate('created_at', today())
-                    ->whereTime('created_at', '>=', $schedule->scheduled_time)
                     ->exists();
 
                 if (!$logExists && now()->format('H:i:s') > $schedule->scheduled_time) {
                     $missedFeedings[] = $schedule;
                 } elseif (!$logExists) {
-                    // Add to pending schedules (not yet due or not logged)
                     $pendingFeedingSchedules->push($schedule);
                 }
             }

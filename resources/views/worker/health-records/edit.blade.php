@@ -18,11 +18,8 @@
                             <x-input-label for="batch_id" :value="__('Batch')" />
                             <select id="batch_id" name="batch_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
                                 <option value="">Select a batch</option>
-                                {{-- Include current batch even if its quantity is 0, since it was already assigned to this record --}}
                                 @php
-                                    $batches = \App\Models\Batch::where('current_quantity', '>', 0)
-                                        ->orWhere('id', $healthRecord->batch_id)
-                                        ->get();
+                                    $batches = \App\Models\Batch::where('status', 'active')->orWhere('id', $healthRecord->batch_id)->get();
                                 @endphp
                                 @foreach($batches as $batch)
                                     <option value="{{ $batch->id }}" @if(old('batch_id', $healthRecord->batch_id) == $batch->id) selected @endif>{{ $batch->batch_code }}</option>
@@ -31,45 +28,46 @@
                             <x-input-error :messages="$errors->get('batch_id')" class="mt-2" />
                         </div>
 
-                        <!-- Record Type -->
+                        <!-- Recorded Date -->
                         <div class="mt-4">
-                            <x-input-label for="record_type" :value="__('Record Type')" />
-                            <select id="record_type" name="record_type" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                                <option value="">Select a type</option>
-                                <option value="symptom" @if(old('record_type', $healthRecord->record_type) == 'symptom') selected @endif>Symptom</option>
-                                <option value="diagnosis" @if(old('record_type', $healthRecord->record_type) == 'diagnosis') selected @endif>Diagnosis</option>
-                                <option value="medication" @if(old('record_type', $healthRecord->record_type) == 'medication') selected @endif>Medication</option>
-                                <option value="recommendation" @if(old('record_type', $healthRecord->record_type) == 'recommendation') selected @endif>Recommendation</option>
-                            </select>
-                            <x-input-error :messages="$errors->get('record_type')" class="mt-2" />
+                            <x-input-label for="recorded_date" :value="__('Recorded Date')" />
+                            <x-text-input id="recorded_date" class="block mt-1 w-full" type="date" name="recorded_date" :value="old('recorded_date', $healthRecord->recorded_date->format('Y-m-d'))" required />
+                            <x-input-error :messages="$errors->get('recorded_date')" class="mt-2" />
                         </div>
 
-                        <!-- Recorded At -->
+                        <!-- Observation -->
                         <div class="mt-4">
-                            <x-input-label for="recorded_at" :value="__('Recorded Date & Time')" />
-                            <x-text-input id="recorded_at" class="block mt-1 w-full" type="datetime-local" name="recorded_at" :value="old('recorded_at', $healthRecord->recorded_at?->format('Y-m-d\TH:i'))" required />
-                            <x-input-error :messages="$errors->get('recorded_at')" class="mt-2" />
+                            <x-input-label for="observation" :value="__('Observation')" />
+                            <textarea id="observation" name="observation" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>{{ old('observation', $healthRecord->observation) }}</textarea>
+                            <x-input-error :messages="$errors->get('observation')" class="mt-2" />
                         </div>
 
-                        <!-- Description -->
+                        <!-- Medication Name (Optional) -->
                         <div class="mt-4">
-                            <x-input-label for="description" :value="__('Description / Observation')" />
-                            <textarea id="description" name="description" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>{{ old('description', $healthRecord->description) }}</textarea>
-                            <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                            <x-input-label for="medication_name" :value="__('Medication Name (Optional)')" />
+                            <x-text-input id="medication_name" class="block mt-1 w-full" type="text" name="medication_name" :value="old('medication_name', $healthRecord->medication_name)" />
+                            <x-input-error :messages="$errors->get('medication_name')" class="mt-2" />
                         </div>
 
-                        <!-- Medication Given (Optional) -->
+                        <!-- Dosage Amount (Optional) -->
                         <div class="mt-4">
-                            <x-input-label for="medication_given" :value="__('Medication Given (Optional)')" />
-                            <x-text-input id="medication_given" class="block mt-1 w-full" type="text" name="medication_given" :value="old('medication_given', $healthRecord->medication_given)" />
-                            <x-input-error :messages="$errors->get('medication_given')" class="mt-2" />
+                            <x-input-label for="dosage_amount" :value="__('Dosage Amount (Optional)')" />
+                            <x-text-input id="dosage_amount" class="block mt-1 w-full" type="text" name="dosage_amount" :value="old('dosage_amount', $healthRecord->dosage_amount)" />
+                            <x-input-error :messages="$errors->get('dosage_amount')" class="mt-2" />
                         </div>
 
-                        <!-- Dosage (Optional) -->
+                        <!-- Dosage Unit (Optional) -->
                         <div class="mt-4">
-                            <x-input-label for="dosage" :value="__('Dosage (Optional)')" />
-                            <x-text-input id="dosage" class="block mt-1 w-full" type="text" name="dosage" :value="old('dosage', $healthRecord->dosage)" />
-                            <x-input-error :messages="$errors->get('dosage')" class="mt-2" />
+                            <x-input-label for="dosage_unit" :value="__('Dosage Unit (Optional)')" />
+                            <x-text-input id="dosage_unit" class="block mt-1 w-full" type="text" name="dosage_unit" :value="old('dosage_unit', $healthRecord->dosage_unit)" />
+                            <x-input-error :messages="$errors->get('dosage_unit')" class="mt-2" />
+                        </div>
+
+                        <!-- Notes (Optional) -->
+                        <div class="mt-4">
+                            <x-input-label for="notes" :value="__('Notes (Optional)')" />
+                            <textarea id="notes" name="notes" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('notes', $healthRecord->notes) }}</textarea>
+                            <x-input-error :messages="$errors->get('notes')" class="mt-2" />
                         </div>
 
                         <div class="flex items-center justify-end mt-4">

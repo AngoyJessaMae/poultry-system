@@ -23,7 +23,6 @@ class StoreMortalityRecordRequest extends FormRequest
     {
         return [
             'batch_id' => 'required|exists:batches,id,status,active',
-            'station_id' => 'required|exists:stations,id',
             'mortality_date' => 'required|date',
             'count' => 'required|integer|min:1',
             'suspected_cause' => 'nullable|string|max:255',

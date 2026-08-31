@@ -7,6 +7,27 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6 bg-white border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Today's Feeding Schedule</h3>
+                    <div class="mt-4 space-y-3">
+                        @forelse($pendingFeedingSchedules as $schedule)
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <span class="font-semibold">{{ $schedule->batch->batch_code }}</span>
+                                    <span class="text-sm text-gray-600">({{ $schedule->batch->station->name }}) - {{ \Carbon\Carbon::parse($schedule->scheduled_time)->format('g:i A') }}</span>
+                                </div>
+                                <a href="{{ route('worker.feeding-logs.create', ['batch_id' => $schedule->batch_id]) }}" class="px-3 py-1 bg-green-500 text-white text-sm font-semibold rounded-md hover:bg-green-600 transition">
+                                    Log Feed
+                                </a>
+                            </div>
+                        @empty
+                            <p>No pending feeding schedules for today.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
                     <div class="flex justify-between mb-4">

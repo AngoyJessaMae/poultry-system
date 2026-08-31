@@ -25,10 +25,10 @@ class UpdateStationRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'capacity' => 'required|integer|min:1',
             'min_age_days' => 'required|integer|min:0',
             'max_age_days' => 'required|integer|min:0',
             'description' => 'nullable|string',
-            'feeding_method' => ['required', new Enum(FeedingMethod::class)],
         ];
     }
 }

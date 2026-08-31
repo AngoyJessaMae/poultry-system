@@ -13,23 +13,14 @@ class Station extends Model
 
     protected $fillable = [
         'name',
+        'capacity',
         'min_age_days',
         'max_age_days',
         'description',
-        'feeding_method',
-    ];
-
-    protected $casts = [
-        'feeding_method' => FeedingMethod::class,
     ];
 
     public function batches(): HasMany
     {
         return $this->hasMany(Batch::class);
-    }
-
-    public function feedingSchedules(): HasMany
-    {
-        return $this->hasMany(FeedingSchedule::class);
     }
 }

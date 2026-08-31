@@ -23,7 +23,6 @@ class StoreFeedingLogRequest extends FormRequest
     {
         return [
             'batch_id' => 'required|exists:batches,id,status,active',
-            'station_id' => 'required|exists:stations,id',
             'feeding_time_slot' => 'nullable|string|max:255',
             'feed_type' => 'required|string|max:255',
             'quantity_kg' => 'required|numeric|min:0',

@@ -20,7 +20,9 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Station ID</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age Range (Days)</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th scope="col" class="relative px-6 py-3">
@@ -31,11 +33,14 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($stations as $station)
                                 <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $station->id }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $station->name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $station->capacity }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $station->min_age_days }} - {{ $station->max_age_days }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $station->description }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         @if(auth()->user()->isManager())
+                                        <a href="{{ route('manager.stations.show', $station) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
                                             <a href="{{ route('manager.stations.edit', $station) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                         @endif
                                     </td>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreHealthRecordRequest;
+use App\Models\Batch;
 use App\Models\HealthRecord;
 use Illuminate\Http\Request;
 
@@ -23,8 +24,9 @@ class HealthRecordController extends Controller
     public function create()
     {
         $this->authorize('create', HealthRecord::class);
+        $batches = Batch::where('status', 'active')->get();
         $view = auth()->user()->isManager() ? 'manager.health-records.create' : 'worker.health-records.create';
-        return view($view);
+        return view($view, compact('batches'));
     }
 
     public function store(StoreHealthRecordRequest $request)

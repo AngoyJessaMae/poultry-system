@@ -20,8 +20,6 @@
                             <tr>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch Code</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Station</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arrival Date</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Initial Quantity</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Quantity</th>
                                 <th scope="col" class="relative px-6 py-3">
                                     <span class="sr-only">Actions</span>
@@ -33,8 +31,6 @@
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap font-medium">{{ $batch->batch_code }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $batch->station->name }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $batch->arrival_date->format('Y-m-d') }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $batch->initial_quantity }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $batch->current_quantity }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('manager.batches.show', $batch) }}" class="text-indigo-600 hover:text-indigo-900">View</a>

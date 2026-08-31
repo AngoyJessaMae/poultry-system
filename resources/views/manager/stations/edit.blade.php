@@ -20,6 +20,13 @@
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
+                        <!-- Capacity -->
+                        <div class="mt-4">
+                            <x-input-label for="capacity" :value="__('Capacity')" />
+                            <x-text-input id="capacity" class="block mt-1 w-full" type="number" name="capacity" :value="old('capacity', $station->capacity)" required />
+                            <x-input-error :messages="$errors->get('capacity')" class="mt-2" />
+                        </div>
+
                         <!-- Min Age -->
                         <div class="mt-4">
                             <x-input-label for="min_age_days" :value="__('Minimum Age (Days)')" />
@@ -41,18 +48,11 @@
                             <x-input-error :messages="$errors->get('description')" class="mt-2" />
                         </div>
 
-                        <!-- Feeding Method -->
-                        <div class="mt-4">
-                            <x-input-label for="feeding_method" :value="__('Feeding Method')" />
-                            <select id="feeding_method" name="feeding_method" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                @foreach(\App\Enums\FeedingMethod::cases() as $method)
-                                    <option value="{{ $method->value }}" @if($station->feeding_method == $method) selected @endif>{{ str_replace('_', ' ', Str::title($method->name)) }}</option>
-                                @endforeach
-                            </select>
-                            <x-input-error :messages="$errors->get('feeding_method')" class="mt-2" />
-                        </div>
 
                         <div class="flex items-center justify-end mt-4">
+                            <a href="{{ route('manager.stations.index') }}" class="text-sm text-gray-600 hover:text-gray-900">
+                                {{ __('Back to Station List') }}
+                            </a>
                             <x-primary-button class="ms-4">
                                 {{ __('Update Station') }}
                             </x-primary-button>

@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('stations', function (Blueprint $table) {
-            $table->string('feeding_method')->default('unlimited');
+        Schema::table('feeding_schedules', function (Blueprint $table) {
+            $table->timestamp('missed_at')->nullable();
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('stations', function (Blueprint $table) {
-            $table->dropColumn('feeding_method');
+        Schema::table('feeding_schedules', function (Blueprint $table) {
+            $table->dropColumn('missed_at');
         });
     }
 };

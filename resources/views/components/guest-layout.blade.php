@@ -18,14 +18,9 @@
 <body class="font-sans antialiased" style="background-color: #f3f4f6;">
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 px-4 bg-gray-100">
         <!-- Logo Section -->
-        <div class="mb-6">
-            <a href="/" class="flex flex-col items-center">
-                <!-- Custom Logo Container - Replace with your logo -->
-                <div class="flex items-center justify-center mb-3 overflow-hidden">
-                    <x-application-logo />
-                </div>
-                <h1 class="text-2xl font-bold text-gray-800">Poultry Management System</h1>
-                <p class="text-sm text-gray-500 mt-1">Streamline your farm operations</p>
+        <div class="mb-4">
+            <a href="/" class="flex justify-center">
+                <x-application-logo />
             </a>
         </div>
 

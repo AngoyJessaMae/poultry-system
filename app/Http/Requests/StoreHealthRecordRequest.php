@@ -24,11 +24,12 @@ class StoreHealthRecordRequest extends FormRequest
     {
         return [
             'batch_id' => 'required|exists:batches,id,status,active',
-            'record_type' => ['required', Rule::in(['symptom', 'diagnosis', 'medication', 'recommendation'])],
-            'description' => 'required|string',
-            'medication_given' => 'nullable|string|max:255',
-            'dosage' => 'nullable|string|max:255',
-            'recorded_at' => 'required|date',
+            'recorded_date' => 'required|date',
+            'observation' => 'required|string',
+            'medication_name' => 'nullable|string|max:255',
+            'dosage_amount' => 'nullable|string|max:255',
+            'dosage_unit' => 'nullable|string|max:255',
+            'notes' => 'nullable|string',
         ];
     }
 }

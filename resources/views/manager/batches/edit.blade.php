@@ -63,9 +63,9 @@
                         <div class="mt-4">
                             <x-input-label for="feeding_method" :value="__('Feeding Method')" />
                             <select id="feeding_method" name="feeding_method" class="block mt-1 w-full border-gray-300 focus:border-brand-orange focus:ring-brand-orange rounded-md shadow-sm">
+                                <option value="unlimited" {{ old('feeding_method', $batch->feeding_method) == 'unlimited' ? 'selected' : '' }}>Unlimited</option>
                                 <option value="twice_daily" {{ old('feeding_method', $batch->feeding_method) == 'twice_daily' ? 'selected' : '' }}>Twice Daily</option>
                                 <option value="four_times_daily" {{ old('feeding_method', $batch->feeding_method) == 'four_times_daily' ? 'selected' : '' }}>Four Times Daily</option>
-                                <option value="unlimited" {{ old('feeding_method', $batch->feeding_method) == 'unlimited' ? 'selected' : '' }}>Unlimited</option>
                             </select>
                             <x-input-error :messages="$errors->get('feeding_method')" class="mt-2" />
                         </div>

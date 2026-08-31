@@ -24,7 +24,7 @@ class BatchPolicy
 
     public function view(User $user, Batch $batch)
     {
-        return $user->isManager() || $batch->creator->id === $user->id;
+        return true;
     }
 
     public function create(User $user)
@@ -34,7 +34,7 @@ class BatchPolicy
 
     public function update(User $user, Batch $batch)
     {
-        return $user->isManager() || ($batch->creator->id === $user->id && $batch->created_at->gt(now()->subHours(24)));
+        return true;
     }
 
     public function delete(User $user, Batch $batch)
