@@ -8,6 +8,8 @@ use App\Models\GrowthRecord;
 use App\Models\MortalityRecord;
 use App\Models\Sale;
 use App\Models\Station;
+use App\Models\Report;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Exports\ReportExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -24,27 +26,47 @@ class ReportController extends Controller
 
         $analytics = $this->getAnalytics($filters);
         $data = $this->getData($filters);
+        $reportHistory = Report::with('generator')->latest('generated_at')->take(20)->get();
 
         // Debug: Let's check what data we're getting
         // dd($filters, $analytics, $data->count(), $data);
 
-        return view('manager.reports.index', compact('stations', 'batches', 'filters', 'analytics', 'data'));
+        return view('manager.reports.index', compact('stations', 'batches', 'filters', 'analytics', 'data', 'reportHistory'));
     }
 
     public function exportPdf(Request $request)
     {
         $filters = $request->only(['start_date', 'end_date', 'station_id', 'batch_id', 'report_type']);
+        $report = $this->recordReport($filters);
         $analytics = $this->getAnalytics($filters);
         $data = $this->getData($filters);
 
-        $pdf = Pdf::loadView('reports.pdf', compact('analytics', 'data', 'filters'));
+        $pdf = Pdf::loadView('reports.pdf', compact('analytics', 'data', 'filters', 'report'));
         return $pdf->download('report.pdf');
     }
 
     public function exportExcel(Request $request)
     {
         $filters = $request->only(['start_date', 'end_date', 'station_id', 'batch_id', 'report_type']);
-        return Excel::download(new ReportExport($filters), 'report.xlsx');
+        $report = $this->recordReport($filters);
+        return Excel::download(new ReportExport($filters, $report), 'report.xlsx');
+    }
+
+    private function recordReport(array $filters): Report
+    {
+        $type = $filters['report_type'] ?? 'profit';
+
+        if (! in_array($type, ['feeding', 'growth', 'medication', 'mortality', 'sales', 'profit'], true)) {
+            $type = 'profit';
+        }
+
+        return Report::create([
+            'generated_by' => auth()->id(),
+            'type' => $type,
+            'period_start' => ! empty($filters['start_date']) ? Carbon::parse($filters['start_date'])->toDateString() : null,
+            'period_end' => ! empty($filters['end_date']) ? Carbon::parse($filters['end_date'])->toDateString() : null,
+            'generated_at' => now(),
+        ]);
     }
 
     private function getAnalytics(array $filters)
@@ -67,7 +89,7 @@ class ReportController extends Controller
                     $q->where('feeding_time', '<=', $date);
                 }
             })
-            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)))
             ->when($filters['batch_id'] ?? null, function ($q, $id) {
                 $q->where(function($subq) use ($id) {
                     $subq->where('batch_id', $id)->orWhereNull('batch_id');
@@ -92,7 +114,7 @@ class ReportController extends Controller
                     $q->where('feeding_time', '<=', $date);
                 }
             })
-            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)))
               ->when($filters['batch_id'] ?? null, function ($q, $id) {
                   $q->where(function($subq) use ($id) {
                       $subq->where('batch_id', $id)->orWhereNull('batch_id');
@@ -150,7 +172,7 @@ class ReportController extends Controller
                     $q->where('mortality_date', '<=', $date);
                 }
             })
-            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)))
                 ->when($filters['batch_id'] ?? null, function ($q, $id) {
                     $q->where(function($subq) use ($id) {
                         $subq->where('batch_id', $id)->orWhereNull('batch_id');
@@ -210,7 +232,7 @@ class ReportController extends Controller
                     $q->where('feeding_time', '<=', $date);
                 }
             })
-            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)))
             ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
             ->get();
         
@@ -326,7 +348,7 @@ class ReportController extends Controller
                 })
                 ->when($filters['station_id'] ?? null, function ($q, $id) use ($reportType) {
                     match($reportType) {
-                        'feeding' => $q->where('station_id', $id),
+                        'feeding' => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)),
                         'growth' => $q->where('batches.station_id', $id),
                         'mortality' => $q->where('station_id', $id),
                         'sales' => $q->where('batches.station_id', $id),

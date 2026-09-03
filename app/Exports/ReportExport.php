@@ -8,14 +8,17 @@ use App\Models\FeedingLog;
 use App\Models\GrowthRecord;
 use App\Models\MortalityRecord;
 use App\Models\Sale;
+use App\Models\Report;
 
 class ReportExport implements FromView
 {
     protected $filters;
+    protected $report;
 
-    public function __construct(array $filters)
+    public function __construct(array $filters, Report $report)
     {
         $this->filters = $filters;
+        $this->report = $report;
     }
 
     public function view(): View
@@ -25,7 +28,8 @@ class ReportExport implements FromView
         return view('reports.excel', [
             'data' => $data,
             'analytics' => $analytics,
-            'filters' => $this->filters
+            'filters' => $this->filters,
+            'report' => $this->report,
         ]);
     }
 
@@ -35,14 +39,14 @@ class ReportExport implements FromView
         $totalFeed = FeedingLog::query()
             ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '>=', $date))
             ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '<=', $date))
-            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)))
             ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
             ->sum('quantity');
 
         $feedingRecords = FeedingLog::query()
             ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '>=', $date))
             ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '<=', $date))
-            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)))
             ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
             ->orderBy('feeding_time')
             ->get();
@@ -181,7 +185,7 @@ class ReportExport implements FromView
                 })
                 ->when($filters['station_id'] ?? null, function ($q, $id) use ($reportType) {
                     match($reportType) {
-                        'feeding' => $q->where('station_id', $id),
+                        'feeding' => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)),
                         'growth' => $q->where('batches.station_id', $id),
                         'mortality' => $q->where('station_id', $id),
                         'sales' => $q->where('batches.station_id', $id),

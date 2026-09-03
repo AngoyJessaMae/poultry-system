@@ -35,6 +35,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::post('/notifications/dismiss', [NotificationController::class, 'dismiss'])->name('notifications.dismiss');
+
+    Route::get('/reports', [ReportController::class, 'index'])->name('manager.reports.index');
+    Route::get('/reports/export/pdf', [ReportController::class, 'exportPdf'])->name('manager.reports.export.pdf');
+    Route::get('/reports/export/excel', [ReportController::class, 'exportExcel'])->name('manager.reports.export.excel');
 });
 
 // 3. Manager-only group
@@ -45,12 +49,6 @@ Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')
     Route::resource('batches', BatchController::class);
     Route::resource('users', UserController::class);
     Route::patch('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate'); // Route to activate pending workers
-
-    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-
-    Route::get('reports/export/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
-    Route::get('reports/export/excel', [ReportController::class, 'exportExcel'])->name('reports.export.excel');
-    Route::post('reports/export', [ReportController::class, 'export'])->name('reports.export');
 
     Route::resource('feeding-logs', FeedingLogController::class)->only(['index', 'show']);
     Route::resource('growth-records', GrowthRecordController::class)->only(['index', 'show']);

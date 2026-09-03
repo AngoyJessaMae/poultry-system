@@ -142,6 +142,9 @@
                 <x-responsive-nav-link :href="route('worker.sales.index')" :active="request()->routeIs('worker.sales.index')">
                     {{ __('Sales') }}
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('manager.reports.index')" :active="request()->routeIs('manager.reports.index')">
+                    {{ __('Reports') }}
+                </x-responsive-nav-link>
             @endif
         </div>
 

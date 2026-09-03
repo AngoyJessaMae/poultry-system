@@ -85,4 +85,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Sale::class);
     }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(Report::class, 'generated_by');
+    }
 }
