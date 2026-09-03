@@ -25,7 +25,7 @@ class StoreGrowthRecordRequest extends FormRequest
         return [
             'batch_id' => 'required|exists:batches,id,status,active',
             'recorded_date' => 'required|date',
-            'age_days' => 'required|integer|min:0',
+            'age_days' => 'nullable|integer|min:0',
             'average_weight_grams' => 'required|numeric|min:0',
             'is_below_expected' => 'boolean',
             'notes' => 'nullable|string',

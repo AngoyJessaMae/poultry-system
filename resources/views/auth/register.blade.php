@@ -58,6 +58,13 @@
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
+        <!-- Contact Number -->
+        <div class="mb-6">
+            <x-input-label for="contact_number" :value="__('Contact Number')" class="text-sm font-semibold text-gray-700 mb-2" />
+            <x-text-input id="contact_number" class="block mt-1 w-full pl-4 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all" type="tel" name="contact_number" :value="old('contact_number')" required autocomplete="tel" placeholder="09XXXXXXXXX" />
+            <x-input-error :messages="$errors->get('contact_number')" class="mt-2" />
+        </div>
+
         <!-- Password -->
         <div class="mb-6">
             <x-input-label for="password" :value="__('Password')" class="text-sm font-semibold text-gray-700 mb-2" />

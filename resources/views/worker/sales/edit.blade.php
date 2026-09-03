@@ -62,7 +62,7 @@
                         <!-- Total Amount -->
                         <div class="mt-4">
                             <x-input-label for="total_amount" :value="__('Total Amount (PHP)')" />
-                            <x-text-input id="total_amount" class="block mt-1 w-full" type="number" step="0.01" name="total_amount" :value="old('total_amount', $sale->total_amount)" min="0" required />
+                            <x-text-input id="total_amount" class="block mt-1 w-full bg-gray-100" type="number" step="0.01" name="total_amount" :value="old('total_amount', $sale->total_amount)" min="0" required readonly />
                             <x-input-error :messages="$errors->get('total_amount')" class="mt-2" />
                         </div>
 
@@ -86,4 +86,22 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const totalWeightInput = document.getElementById('total_weight_kg');
+            const pricePerKgInput = document.getElementById('price_per_kg');
+            const totalAmountInput = document.getElementById('total_amount');
+
+            function calculateTotalAmount() {
+                const totalWeight = parseFloat(totalWeightInput.value) || 0;
+                const pricePerKg = parseFloat(pricePerKgInput.value) || 0;
+                totalAmountInput.value = (totalWeight * pricePerKg).toFixed(2);
+            }
+
+            totalWeightInput.addEventListener('input', calculateTotalAmount);
+            pricePerKgInput.addEventListener('input', calculateTotalAmount);
+            calculateTotalAmount();
+        });
+    </script>
 </x-app-layout>

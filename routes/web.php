@@ -73,6 +73,6 @@ Route::middleware(['auth', 'role:worker'])->prefix('worker')->name('worker.')->g
     Route::post('batches/{batch}/feeding-logs', [FeedingLogController::class, 'store'])->name('batches.feeding-logs.store');
     Route::resource('growth-records', GrowthRecordController::class);
     Route::resource('health-records', HealthRecordController::class)->except(['destroy']);
-    Route::resource('mortality-records', MortalityRecordController::class)->except(['destroy']);
+    Route::resource('mortality-records', MortalityRecordController::class);
     Route::resource('sales', SaleController::class)->except(['destroy']);
 });

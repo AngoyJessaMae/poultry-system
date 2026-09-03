@@ -25,7 +25,7 @@
                                         ->get();
                                 @endphp
                                 @foreach($batches as $batch)
-                                    <option value="{{ $batch->id }}" @if(old('batch_id', $growthRecord->batch_id) == $batch->id) selected @endif>{{ $batch->batch_code }}</option>
+                                    <option value="{{ $batch->id }}" data-arrival-date="{{ $batch->arrival_date->format('Y-m-d') }}" @if(old('batch_id', $growthRecord->batch_id) == $batch->id) selected @endif>{{ $batch->batch_code }}</option>
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('batch_id')" class="mt-2" />
@@ -41,20 +41,9 @@
                         <!-- Age (Days) -->
                         <div class="mt-4">
                             <x-input-label for="age_days" :value="__('Age (Days)')" />
-                            <x-text-input id="age_days" class="block mt-1 w-full" type="number" name="age_days" :value="old('age_days', $growthRecord->age_days)" required />
+                            <x-text-input id="age_days" class="block mt-1 w-full bg-gray-100" type="number" name="age_days" :value="old('age_days', $growthRecord->age_days)" readonly />
+                            <p class="mt-1 text-sm text-gray-500">Calculated from the batch arrival date and recorded date.</p>
                             <x-input-error :messages="$errors->get('age_days')" class="mt-2" />
-                        </div>
-
-                        <!-- Growth Stage -->
-                        <div class="mt-4">
-                            <x-input-label for="growth_stage" :value="__('Growth Stage')" />
-                            <select id="growth_stage" name="growth_stage" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                                <option value="">Select a stage</option>
-                                <option value="chick" @if(old('growth_stage', $growthRecord->growth_stage) == 'chick') selected @endif>Chick</option>
-                                <option value="grower" @if(old('growth_stage', $growthRecord->growth_stage) == 'grower') selected @endif>Grower</option>
-                                <option value="market_ready" @if(old('growth_stage', $growthRecord->growth_stage) == 'market_ready') selected @endif>Market Ready</option>
-                            </select>
-                            <x-input-error :messages="$errors->get('growth_stage')" class="mt-2" />
                         </div>
 
                         <!-- Is Below Expected? -->
@@ -94,3 +83,27 @@
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const batchSelect = document.getElementById('batch_id');
+        const recordedDate = document.getElementById('recorded_date');
+        const ageInput = document.getElementById('age_days');
+
+        const updateAge = () => {
+            const arrivalDate = batchSelect.selectedOptions[0]?.dataset.arrivalDate;
+            if (!arrivalDate || !recordedDate.value) {
+                ageInput.value = '';
+                return;
+            }
+
+            const arrival = new Date(`${arrivalDate}T00:00:00`);
+            const recorded = new Date(`${recordedDate.value}T00:00:00`);
+            ageInput.value = Math.max(0, Math.floor((recorded - arrival) / 86400000));
+        };
+
+        batchSelect.addEventListener('change', updateAge);
+        recordedDate.addEventListener('change', updateAge);
+        updateAge();
+    });
+</script>

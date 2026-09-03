@@ -82,7 +82,21 @@ class MortalityRecordController extends Controller
     public function update(StoreMortalityRecordRequest $request, MortalityRecord $mortalityRecord)
     {
         $this->authorize('update', $mortalityRecord);
-        $mortalityRecord->update($request->validated());
+        $data = $request->validated();
+        $batch = Batch::findOrFail($data['batch_id']);
+        $availableQuantity = $batch->current_quantity;
+
+        if ((int) $mortalityRecord->batch_id === (int) $batch->id) {
+            $availableQuantity += $mortalityRecord->count;
+        }
+
+        if ($availableQuantity < $data['count']) {
+            return back()->withErrors(['count' => 'Mortality count cannot be greater than the current batch quantity.'])->withInput();
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($mortalityRecord, $data) {
+            $mortalityRecord->update($data);
+        });
         $route = auth()->user()->isManager() ? 'manager.mortality-records.index' : 'worker.mortality-records.index';
         return redirect()->route($route);
     }

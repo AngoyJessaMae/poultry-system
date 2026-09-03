@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreGrowthRecordRequest;
 use App\Models\Batch;
 use App\Models\GrowthRecord;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class GrowthRecordController extends Controller
@@ -34,18 +35,9 @@ class GrowthRecordController extends Controller
         $this->authorize('create', GrowthRecord::class);
         $data = $request->validated();
 
-        // Calculate growth stage based on the submitted data
-        $age = (int) $data['age_days'];
-        $weightInKg = (float) $data['average_weight_grams'] / 1000;
-
-        $stage = 'Chick'; // Default stage
-        if ($age >= 26 && $weightInKg >= 1.3) {
-            $stage = 'Market-Ready';
-        } elseif ($age >= 11) {
-            $stage = 'Grower';
-        }
-
-        $data['growth_stage'] = $stage;
+        $batch = Batch::findOrFail($data['batch_id']);
+        $data['age_days'] = $this->ageOnDate($batch, $data['recorded_date']);
+        $data['growth_stage'] = $this->growthStage($data['age_days'], $data['average_weight_grams']);
         $data['user_id'] = auth()->id();
 
         GrowthRecord::create($data);
@@ -71,9 +63,32 @@ class GrowthRecordController extends Controller
     public function update(StoreGrowthRecordRequest $request, GrowthRecord $growthRecord)
     {
         $this->authorize('update', $growthRecord);
-        $growthRecord->update($request->validated());
+        $data = $request->validated();
+        $batch = Batch::findOrFail($data['batch_id']);
+        $data['age_days'] = $this->ageOnDate($batch, $data['recorded_date']);
+        $data['growth_stage'] = $this->growthStage($data['age_days'], $data['average_weight_grams']);
+        $growthRecord->update($data);
         $route = auth()->user()->isManager() ? 'manager.growth-records.index' : 'worker.growth-records.index';
         return redirect()->route($route);
+    }
+
+    private function ageOnDate(Batch $batch, string $recordedDate): int
+    {
+        $arrivalDate = Carbon::parse($batch->arrival_date)->startOfDay();
+        $recordDate = Carbon::parse($recordedDate)->startOfDay();
+
+        return max(0, $arrivalDate->diffInDays($recordDate, false));
+    }
+
+    private function growthStage(int $age, float $averageWeightGrams): string
+    {
+        $weightInKg = $averageWeightGrams / 1000;
+
+        if ($age >= 26 && $weightInKg >= 1.3) {
+            return 'Market-Ready';
+        }
+
+        return $age >= 11 ? 'Grower' : 'Chick';
     }
 
     public function destroy(GrowthRecord $growthRecord)

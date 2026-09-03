@@ -76,12 +76,14 @@ class SaleController extends Controller
     {
         $this->authorize('update', $sale);
 
+        $data = $request->validated();
+        $data['total_amount'] = round((float) $data['total_weight_kg'] * (float) $data['price_per_kg'], 2);
         $originalHeadsSold = $sale->heads_sold;
-        $newHeadsSold = $request->validated()['heads_sold'];
+        $newHeadsSold = $data['heads_sold'];
         $difference = $newHeadsSold - $originalHeadsSold;
 
         try {
-            DB::transaction(function () use ($sale, $request, $difference) {
+            DB::transaction(function () use ($sale, $data, $difference) {
                 $batch = Batch::lockForUpdate()->find($sale->batch_id);
 
                 if ($difference > 0 && $batch->current_quantity < $difference) {
@@ -90,7 +92,7 @@ class SaleController extends Controller
 
                 $batch->decrement('current_quantity', $difference);
 
-                $sale->update($request->validated());
+                $sale->update($data);
             });
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['heads_sold' => $e->getMessage()]);

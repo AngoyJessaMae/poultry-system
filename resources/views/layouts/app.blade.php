@@ -16,7 +16,7 @@
 </head>
 <body class="font-sans antialiased">
     <div class="min-h-screen bg-gray-50">
-        <div x-data="{ sidebarOpen: true }" class="flex">
+        <div x-data="{ sidebarOpen: true }" @toggle-sidebar.window="sidebarOpen = !sidebarOpen" class="flex">
             <!-- Sidebar -->
             @include('layouts.sidebar')
 

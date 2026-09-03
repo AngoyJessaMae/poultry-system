@@ -33,12 +33,14 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'contact_number' => ['required', 'string', 'max:30'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'contact_number' => $request->contact_number,
             'password' => Hash::make($request->password),
             'role' => 'worker',
             'is_active' => false, // Self-registered workers need manager approval
