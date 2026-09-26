@@ -13,10 +13,15 @@
                     <div class="grid grid-cols-2 gap-4 mt-4">
                         <p><strong>Recorded by:</strong> {{ $healthRecord->user->name }}</p>
                         <p><strong>Date:</strong> {{ $healthRecord->recorded_date->format('Y-m-d') }}</p>
+                        <p><strong>Affected chickens:</strong> {{ $healthRecord->affected_count }}</p>
+                        <p><strong>Dead chickens:</strong> {{ $healthRecord->dead_count }}</p>
+                        <p><strong>Recovery status:</strong> {{ str_replace('_', ' ', ucfirst($healthRecord->status)) }}</p>
                         <p><strong>Observation:</strong> {{ $healthRecord->observation }}</p>
                         <p><strong>Medication:</strong> {{ $healthRecord->medication_name ?? 'N/A' }}</p>
                         <p><strong>Dosage:</strong> {{ $healthRecord->dosage_amount ?? 'N/A' }} {{ $healthRecord->dosage_unit ?? '' }}</p>
                         <p><strong>Notes:</strong> {{ $healthRecord->notes ?? 'N/A' }}</p>
+                        <p><strong>Remarks:</strong> {{ $healthRecord->remarks ?? 'N/A' }}</p>
+                        <p><strong>Remedy:</strong> {{ $healthRecord->remedy ?? 'N/A' }}</p>
                     </div>
                     <div class="mt-6">
                         <a href="{{ url()->previous() }}" class="text-blue-500 hover:underline">Back to list</a>

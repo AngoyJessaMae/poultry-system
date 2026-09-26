@@ -27,7 +27,10 @@ class AuthenticatedSessionController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
+            'policy_acknowledged' => ['accepted'],
         ]);
+
+        unset($credentials['policy_acknowledged']);
 
         // Check if credentials are valid first
         if (!Auth::attempt($credentials)) {

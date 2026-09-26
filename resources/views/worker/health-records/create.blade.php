@@ -39,6 +39,29 @@
                             <x-input-error :messages="$errors->get('recorded_date')" class="mt-2" />
                         </div>
 
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3 mt-4">
+                            <div>
+                                <x-input-label for="affected_count" :value="__('Affected Chickens')" />
+                                <x-text-input id="affected_count" class="block mt-1 w-full" type="number" name="affected_count" min="1" value="{{ old('affected_count', 1) }}" required />
+                                <x-input-error :messages="$errors->get('affected_count')" class="mt-2" />
+                            </div>
+                            <div>
+                                <x-input-label for="dead_count" :value="__('Dead Chickens')" />
+                                <x-text-input id="dead_count" class="block mt-1 w-full" type="number" name="dead_count" min="0" value="{{ old('dead_count', 0) }}" required />
+                                <x-input-error :messages="$errors->get('dead_count')" class="mt-2" />
+                            </div>
+                            <div>
+                                <x-input-label for="status" :value="__('Recovery Status')" />
+                                <select id="status" name="status" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                                    <option value="under_treatment" @selected(old('status', 'under_treatment') === 'under_treatment')>Under treatment</option>
+                                    <option value="recovering" @selected(old('status') === 'recovering')>Recovering</option>
+                                    <option value="recovered" @selected(old('status') === 'recovered')>Recovered</option>
+                                    <option value="dead" @selected(old('status') === 'dead')>Dead</option>
+                                </select>
+                                <x-input-error :messages="$errors->get('status')" class="mt-2" />
+                            </div>
+                        </div>
+
                         <!-- Observation -->
                         <div class="mt-4">
                             <x-input-label for="observation" :value="__('Observation')" />
@@ -72,6 +95,18 @@
                             <x-input-label for="notes" :value="__('Notes (Optional)')" />
                             <textarea id="notes" name="notes" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('notes') }}</textarea>
                             <x-input-error :messages="$errors->get('notes')" class="mt-2" />
+                        </div>
+
+                        <div class="mt-4">
+                            <x-input-label for="remarks" :value="__('Remarks (Optional)')" />
+                            <textarea id="remarks" name="remarks" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('remarks') }}</textarea>
+                            <x-input-error :messages="$errors->get('remarks')" class="mt-2" />
+                        </div>
+
+                        <div class="mt-4">
+                            <x-input-label for="remedy" :value="__('Remedy or Treatment Plan (Optional)')" />
+                            <textarea id="remedy" name="remedy" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('remedy') }}</textarea>
+                            <x-input-error :messages="$errors->get('remedy')" class="mt-2" />
                         </div>
 
                         <div class="flex items-center justify-end mt-4">

@@ -25,7 +25,7 @@ require __DIR__.'/auth.php';
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         if (auth()->user()->isManager()) {
-            return redirect()->route('manager.dashboard');
+            return redirect()->route('manager.users.index');
         }
         return redirect()->route('worker.dashboard');
     })->name('dashboard');
@@ -45,16 +45,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'managerDashboard'])->name('dashboard');
 
-    Route::resource('stations', StationController::class);
-    Route::resource('batches', BatchController::class);
     Route::resource('users', UserController::class);
     Route::patch('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate'); // Route to activate pending workers
-
-    Route::resource('feeding-logs', FeedingLogController::class)->only(['index', 'show']);
-    Route::resource('growth-records', GrowthRecordController::class)->only(['index', 'show']);
-    Route::resource('health-records', HealthRecordController::class)->only(['index', 'show']);
-    Route::resource('mortality-records', MortalityRecordController::class)->only(['index', 'show']);
-    Route::resource('sales', SaleController::class)->only(['index', 'show']);
 });
 
 // 4. Worker-only group

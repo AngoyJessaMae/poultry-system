@@ -5,77 +5,74 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                <!-- Stat Cards -->
-                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex items-center transition-transform transform hover:scale-105 hover:shadow-lg">
-                    <div class="bg-blue-500 p-4 rounded-full">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-medium text-gray-900">Total Active Batches</h3>
-                        <p class="mt-1 text-3xl font-semibold text-gray-700">{{ $totalActiveBatches }}</p>
-                    </div>
+    <div class="min-h-[calc(100vh-5rem)] bg-slate-50 py-8 sm:py-10">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="relative overflow-hidden rounded-2xl px-6 py-8 shadow-lg sm:px-10" style="background: linear-gradient(135deg, #c2410c 0%, #ea580c 55%, #f59e0b 100%); color: #ffffff;">
+                <div class="relative z-10 max-w-2xl">
+                    <p class="text-sm font-semibold uppercase tracking-[0.2em]" style="color: #ffedd5;">{{ __('Management overview') }}</p>
+                    <h1 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl" style="color: #ffffff;">{{ __('Keep the farm moving.') }}</h1>
+                    <p class="mt-3 max-w-xl text-sm leading-6 sm:text-base" style="color: #fff7ed;">{{ __('Review worker access and turn farm activity into clear, useful reports from one place.') }}</p>
                 </div>
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex items-center transition-transform transform hover:scale-105 hover:shadow-lg">
-                    <div class="bg-red-500 p-4 rounded-full">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-medium text-gray-900">Today's Mortalities</h3>
-                        <p class="mt-1 text-3xl font-semibold text-gray-700">{{ $todaysMortalityCount }}</p>
-                    </div>
-                </div>
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex items-center transition-transform transform hover:scale-105 hover:shadow-lg">
-                    <div class="bg-yellow-500 p-4 rounded-full">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-medium text-gray-900">Today's Feeding Logs</h3>
-                        <p class="mt-1 text-3xl font-semibold text-gray-700">{{ $todaysFeedingLogsCount }}</p>
-                    </div>
-                </div>
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex items-center transition-transform transform hover:scale-105 hover:shadow-lg">
-                    <div class="bg-green-500 p-4 rounded-full">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org.I have updated the stat cards with a hover effect. Now, when you move your mouse over them, they will lift and scale slightly, making the dashboard more interactive.
+                <div class="absolute -right-10 -top-16 h-56 w-56 rounded-full border-[24px] border-white/10"></div>
+                <div class="absolute -bottom-24 right-24 h-44 w-44 rounded-full border-[18px] border-white/10"></div>
+            </div>
 
-What other improvements would you like to see on the dashboard? I can also enhance the "Batches Below Expected Performance" table to make it clearer and more visually organized.
-svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01M12 6v-1m0-1V4m0 2v1m0 0v1m0-1.01V10m0 4.01V14m0 .01V15m0 1v.01M12 16v-1m0-1.01V14m0-4.01v.01M12 12.01V12m0-2.01V10m0-1V9m0-1V8m0 0h.01M12 8h-.01M11 8h1M12 16h.01M12 16h-.01M13 16h-1M12 12h.01M12 12h-.01M11 12h1M12 4.01V4m0-1V3m0 1V4m0 0v-.01M12 3v-.01M12 2.01V2M12 22v-1m0-1v-1m0 1v.01M12 21v-1m0 0v-.01M12 20v-1m0 0v-.01M12 19v-1m0 0v-.01M12 18v-1m0 0v-.01M12 17v-1m0 0v-.01M12 16.01V16m0-11V5m0-1V4m0 1V5m0 0v-.01M12 4v-.01M12 3.01V3M12 22.01V22M12 22v-1m0 1v.01M12 21v-1m0 0v-.01M12 20v-1m0 0v-.01M12 19v-1m0 0v-.01M12 18v-1m0 0v-.01M12 17v-1m0 0v-.01M12 16.01V16M4 12h.01M4 12h-.01M3 12h1M20 12h.01M20 12h-.01M21 12h-1M12 20.01V20M12 20v-1m0 1v.01M12 19v-1m0 0v-.01M12 18v-1m0 0v-.01M12 17v-1m0 0v-.01M12 16.01V16M12 8.01V8M12 8v-1m0 1v.01M12 7v-1m0 0v-.01M12 6v-1m0 0v-.01M12 5v-1m0 0v-.01M12 4.01V4"></path></svg>
+            <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div class="rounded-xl border border-amber-100 bg-white p-5 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-slate-500">{{ __('Pending approvals') }}</p>
+                        <span class="rounded-lg bg-amber-100 p-2 text-amber-700" aria-hidden="true">!</span>
                     </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-medium text-gray-900">MTD Sales</h3>
-                        <p class="mt-1 text-3xl font-semibold text-gray-700">${{ number_format($monthToDateSalesTotal, 2) }}</p>
+                    <p class="mt-3 text-3xl font-bold text-slate-900">{{ $pendingWorkers }}</p>
+                    <p class="mt-1 text-xs text-slate-500">{{ __('Workers waiting for review') }}</p>
+                </div>
+
+                <div class="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-slate-500">{{ __('Active workers') }}</p>
+                        <span class="rounded-lg bg-emerald-100 p-2 text-emerald-700" aria-hidden="true">&#10003;</span>
                     </div>
+                    <p class="mt-3 text-3xl font-bold text-slate-900">{{ $activeWorkers }}</p>
+                    <p class="mt-1 text-xs text-slate-500">{{ __('Approved accounts with access') }}</p>
+                </div>
+
+                <div class="rounded-xl border border-sky-100 bg-white p-5 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-slate-500">{{ __('Generated reports') }}</p>
+                        <span class="rounded-lg bg-sky-100 p-2 text-sky-700" aria-hidden="true">&#9776;</span>
+                    </div>
+                    <p class="mt-3 text-3xl font-bold text-slate-900">{{ $generatedReports }}</p>
+                    <p class="mt-1 text-xs text-slate-500">{{ __('Reports saved in the system') }}</p>
                 </div>
             </div>
 
-            <div class="mt-8 bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">Batches Below Expected Performance</h3>
-                    <div class="mt-4">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch Name</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Station</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age (Days)</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach($batchesBelowExpected as $batch)
-                                    <tr class="border-b border-gray-200">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $batch->batch_code }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $batch->station->name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $batch->current_age }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-red-500">{{ $batch->below_expected_reason }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="mt-8 flex items-end justify-between gap-4">
+                <div>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">{{ __('Quick actions') }}</p>
+                    <h2 class="mt-1 text-2xl font-bold text-slate-900">{{ __('What would you like to do?') }}</h2>
                 </div>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-2">
+                <a href="{{ route('manager.users.index') }}" class="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-orange-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:p-8">
+                    <div class="flex items-start justify-between">
+                        <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-xl text-orange-700" aria-hidden="true">&#9787;</span>
+                        <span class="text-2xl text-slate-300 transition group-hover:translate-x-1 group-hover:text-orange-500" aria-hidden="true">&rarr;</span>
+                    </div>
+                    <h3 class="mt-6 text-xl font-bold text-slate-900">{{ __('Manage users') }}</h3>
+                    <p class="mt-2 max-w-md text-sm leading-6 text-slate-600">{{ __('Approve new worker registrations, update account details, or review active workers.') }}</p>
+                    <span class="mt-6 inline-flex items-center text-sm font-semibold text-orange-700">{{ __('Open user management') }} <span class="ml-2" aria-hidden="true">&rarr;</span></span>
+                </a>
+
+                <a href="{{ route('manager.reports.index') }}" class="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-sky-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 sm:p-8">
+                    <div class="flex items-start justify-between">
+                        <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 text-xl text-sky-700" aria-hidden="true">&#9776;</span>
+                        <span class="text-2xl text-slate-300 transition group-hover:translate-x-1 group-hover:text-sky-500" aria-hidden="true">&rarr;</span>
+                    </div>
+                    <h3 class="mt-6 text-xl font-bold text-slate-900">{{ __('View reports') }}</h3>
+                    <p class="mt-2 max-w-md text-sm leading-6 text-slate-600">{{ __('Filter farm activity, review performance analytics, and export report data when needed.') }}</p>
+                    <span class="mt-6 inline-flex items-center text-sm font-semibold text-sky-700">{{ __('Open reports') }} <span class="ml-2" aria-hidden="true">&rarr;</span></span>
+                </a>
             </div>
         </div>
     </div>

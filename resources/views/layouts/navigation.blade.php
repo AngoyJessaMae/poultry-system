@@ -105,12 +105,6 @@
                 <x-responsive-nav-link :href="route('manager.dashboard')" :active="request()->routeIs('manager.dashboard')">
                     {{ __('Dashboard') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('manager.stations.index')" :active="request()->routeIs('manager.stations.index')">
-                    {{ __('Stations') }}
-                </x-responsive-nav-link>
-                 <x-responsive-nav-link :href="route('manager.batches.index')" :active="request()->routeIs('manager.batches.index')">
-                    {{ __('Batches') }}
-                </x-responsive-nav-link>
                  <x-responsive-nav-link :href="route('manager.users.index')" :active="request()->routeIs('manager.users.index')">
                     {{ __('Users') }}
                 </x-responsive-nav-link>

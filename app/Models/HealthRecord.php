@@ -13,12 +13,18 @@ class HealthRecord extends Model
     protected $fillable = [
         'batch_id',
         'user_id',
+        'affected_count',
+        'dead_count',
+        'status',
         'recorded_date',
         'observation',
         'medication_name',
         'dosage_amount',
         'dosage_unit',
         'notes',
+        'remarks',
+        'remedy',
+        'mortality_record_id',
     ];
 
     public function batch(): BelongsTo
@@ -29,6 +35,11 @@ class HealthRecord extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function mortalityRecord(): BelongsTo
+    {
+        return $this->belongsTo(MortalityRecord::class);
     }
 
     protected $casts = [

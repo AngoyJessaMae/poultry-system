@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreHealthRecordRequest;
 use App\Models\Batch;
+use App\Models\MortalityRecord;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use App\Models\HealthRecord;
 use Illuminate\Http\Request;
 
@@ -34,7 +37,12 @@ class HealthRecordController extends Controller
         $this->authorize('create', HealthRecord::class);
         $data = $request->validated();
         $data['user_id'] = auth()->id();
-        HealthRecord::create($data);
+
+        DB::transaction(function () use ($data) {
+            $healthRecord = HealthRecord::create($data);
+            $this->syncMortalityRecord($healthRecord);
+        });
+
         $route = auth()->user()->isManager() ? 'manager.health-records.index' : 'worker.health-records.index';
         return redirect()->route($route);
     }
@@ -56,7 +64,13 @@ class HealthRecordController extends Controller
     public function update(StoreHealthRecordRequest $request, HealthRecord $healthRecord)
     {
         $this->authorize('update', $healthRecord);
-        $healthRecord->update($request->validated());
+        $data = $request->validated();
+
+        DB::transaction(function () use ($healthRecord, $data) {
+            $healthRecord->update($data);
+            $this->syncMortalityRecord($healthRecord->fresh(['batch', 'mortalityRecord']));
+        });
+
         $route = auth()->user()->isManager() ? 'manager.health-records.index' : 'worker.health-records.index';
         return redirect()->route($route);
     }
@@ -64,8 +78,57 @@ class HealthRecordController extends Controller
     public function destroy(HealthRecord $healthRecord)
     {
         $this->authorize('delete', $healthRecord);
-        $healthRecord->delete();
+
+        DB::transaction(function () use ($healthRecord) {
+            $healthRecord->load('mortalityRecord');
+            $healthRecord->mortalityRecord?->delete();
+            $healthRecord->delete();
+        });
+
         $route = auth()->user()->isManager() ? 'manager.health-records.index' : 'worker.health-records.index';
         return redirect()->route($route);
+    }
+
+    private function syncMortalityRecord(HealthRecord $healthRecord): void
+    {
+        $healthRecord->loadMissing('batch', 'mortalityRecord');
+        $deadCount = (int) $healthRecord->dead_count;
+        $mortalityRecord = $healthRecord->mortalityRecord;
+
+        if ($deadCount === 0) {
+            $mortalityRecord?->delete();
+            if ($healthRecord->mortality_record_id !== null) {
+                $healthRecord->update(['mortality_record_id' => null]);
+            }
+            return;
+        }
+
+        $availableQuantity = $healthRecord->batch->current_quantity;
+        if ($mortalityRecord && (int) $mortalityRecord->batch_id === (int) $healthRecord->batch_id) {
+            $availableQuantity += $mortalityRecord->count;
+        }
+
+        if ($availableQuantity < $deadCount) {
+            throw ValidationException::withMessages([
+                'dead_count' => 'The number of dead chickens cannot exceed the batch quantity.',
+            ]);
+        }
+
+        $mortalityData = [
+            'batch_id' => $healthRecord->batch_id,
+            'station_id' => $healthRecord->batch->station_id,
+            'user_id' => $healthRecord->user_id,
+            'mortality_date' => $healthRecord->recorded_date,
+            'count' => $deadCount,
+            'suspected_cause' => $healthRecord->observation,
+            'notes' => trim(collect([$healthRecord->remarks, $healthRecord->remedy])->filter()->implode("\n")),
+        ];
+
+        if ($mortalityRecord) {
+            $mortalityRecord->update($mortalityData);
+        } else {
+            $mortalityRecord = MortalityRecord::create($mortalityData);
+            $healthRecord->update(['mortality_record_id' => $mortalityRecord->id]);
+        }
     }
 }

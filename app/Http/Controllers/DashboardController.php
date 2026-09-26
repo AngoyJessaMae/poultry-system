@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Batch;
-use App\Models\FeedingLog;
-use App\Models\FeedingSchedule;
-use App\Models\MortalityRecord;
-use App\Models\Sale;
+use App\Models\Report;
+use App\Models\User;
 use App\Traits\ManagesFeedingSchedules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,19 +15,11 @@ class DashboardController extends Controller
     use ManagesFeedingSchedules;
     public function managerDashboard()
     {
-        $totalActiveBatches = Batch::active()->count();
-        $todaysMortalityCount = MortalityRecord::whereDate('created_at', today())->sum('count');
-        $todaysFeedingLogsCount = FeedingLog::whereDate('created_at', today())->count();
-        $monthToDateSalesTotal = Sale::whereMonth('created_at', today()->month)->sum('total_amount');
-        $batchesBelowExpected = Batch::where('is_below_expected', true)->get();
+        $pendingWorkers = User::where('role', 'worker')->where('is_active', false)->count();
+        $activeWorkers = User::where('role', 'worker')->where('is_active', true)->count();
+        $generatedReports = Report::count();
 
-        return view('manager.dashboard', compact(
-            'totalActiveBatches',
-            'todaysMortalityCount',
-            'todaysFeedingLogsCount',
-            'monthToDateSalesTotal',
-            'batchesBelowExpected'
-        ));
+        return view('manager.dashboard', compact('pendingWorkers', 'activeWorkers', 'generatedReports'));
     }
 
     public function workerDashboard()

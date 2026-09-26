@@ -16,9 +16,18 @@ class HealthRecordFactory extends Factory
         return [
             'batch_id' => Batch::factory(),
             'user_id' => User::factory(),
-            'symptoms' => 'Routine Check',
-            'treatment' => 'None',
+            'affected_count' => 1,
+            'dead_count' => 0,
+            'status' => 'under_treatment',
+            'recorded_date' => now(),
+            'observation' => 'Routine Check',
+            'medication_name' => null,
+            'dosage_amount' => null,
+            'dosage_unit' => null,
             'notes' => $this->faker->sentence,
+            'remarks' => null,
+            'remedy' => null,
+            'mortality_record_id' => null,
         ];
     }
 }

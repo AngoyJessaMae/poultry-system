@@ -24,10 +24,11 @@ class AuthenticationTest extends TestCase
         $response = $this->post('/login', [
             'email' => $user->email,
             'password' => 'password',
+            'policy_acknowledged' => '1',
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('worker.dashboard', absolute: false));
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
@@ -39,6 +40,20 @@ class AuthenticationTest extends TestCase
             'password' => 'wrong-password',
         ]);
 
+        $this->assertGuest();
+    }
+
+    public function test_users_must_acknowledge_the_policy_before_authenticating(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->from('/login')->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect('/login');
+        $response->assertSessionHasErrors('policy_acknowledged');
         $this->assertGuest();
     }
 

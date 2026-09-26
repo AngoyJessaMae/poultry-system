@@ -21,6 +21,8 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observation</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dead</th>
                                 <th scope="col" class="relative px-6 py-3">
                                     <span class="sr-only">Actions</span>
                                 </th>
@@ -32,6 +34,8 @@
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $record->recorded_date->format('Y-m-d') }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $record->batch->batch_code }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap max-w-xs truncate">{{ $record->observation }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ str_replace('_', ' ', ucfirst($record->status)) }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $record->dead_count }} / {{ $record->affected_count }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('worker.health-records.show', $record) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
                                         <a href="{{ route('worker.health-records.edit', $record) }}" class="ml-4 text-indigo-600 hover:text-indigo-900">Edit</a>
