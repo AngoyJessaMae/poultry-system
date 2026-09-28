@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Batch;
 use App\Models\FeedingLog;
 use App\Models\GrowthRecord;
+use App\Models\HealthRecord;
 use App\Models\MortalityRecord;
 use App\Models\Sale;
 use App\Models\Station;
@@ -56,7 +57,7 @@ class ReportController extends Controller
     {
         $type = $filters['report_type'] ?? 'profit';
 
-        if (! in_array($type, ['feeding', 'growth', 'medication', 'mortality', 'sales', 'profit'], true)) {
+        if (! in_array($type, ['feeding', 'growth', 'health', 'medication', 'mortality', 'sales', 'profit'], true)) {
             $type = 'profit';
         }
 
@@ -257,6 +258,12 @@ class ReportController extends Controller
         // Additional overall analytics
         $totalFeedingLogs = $feedingRecords->count();
         $totalGrowthRecords = $growthRecords->count();
+        $totalHealthRecords = HealthRecord::query()
+            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '>=', $date))
+            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '<=', $date))
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)))
+            ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
+            ->count();
         $totalMortalityRecords = MortalityRecord::query()
             ->when($filters['start_date'] ?? null, function ($q, $date) {
                 try {
@@ -308,6 +315,7 @@ class ReportController extends Controller
             'workerFeedingActivity' => $workerFeedingActivity,
             'totalFeedingLogs' => $totalFeedingLogs,
             'totalGrowthRecords' => $totalGrowthRecords,
+            'totalHealthRecords' => $totalHealthRecords,
             'totalMortalityRecords' => $totalMortalityRecords,
             'totalSalesRecords' => $totalSalesRecords,
             'uniqueWorkers' => $uniqueWorkers,
@@ -321,6 +329,7 @@ class ReportController extends Controller
         $query = match ($reportType) {
             'feeding' => FeedingLog::query(),
             'growth' => GrowthRecord::query()->join('batches', 'growth_records.batch_id', '=', 'batches.id')->select('growth_records.*'),
+            'health' => HealthRecord::query()->with(['batch', 'user']),
             'mortality' => MortalityRecord::query(),
             'sales' => Sale::query()->join('batches', 'sales.batch_id', '=', 'batches.id')->select('sales.*'),
             default => collect(),
@@ -332,6 +341,7 @@ class ReportController extends Controller
                     match($reportType) {
                         'feeding' => $q->where('feeding_time', '>=', $date),
                         'growth' => $q->where('recorded_date', '>=', $date),
+                        'health' => $q->where('recorded_date', '>=', $date),
                         'mortality' => $q->where('mortality_date', '>=', $date),
                         'sales' => $q->where('sale_date', '>=', $date),
                         default => $q->where('created_at', '>=', $date),
@@ -341,6 +351,7 @@ class ReportController extends Controller
                     match($reportType) {
                         'feeding' => $q->where('feeding_time', '<=', $date),
                         'growth' => $q->where('recorded_date', '<=', $date),
+                        'health' => $q->where('recorded_date', '<=', $date),
                         'mortality' => $q->where('mortality_date', '<=', $date),
                         'sales' => $q->where('sale_date', '<=', $date),
                         default => $q->where('created_at', '<=', $date),
@@ -350,6 +361,7 @@ class ReportController extends Controller
                     match($reportType) {
                         'feeding' => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)),
                         'growth' => $q->where('batches.station_id', $id),
+                        'health' => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)),
                         'mortality' => $q->where('station_id', $id),
                         'sales' => $q->where('batches.station_id', $id),
                         default => $q->where('station_id', $id),
@@ -359,6 +371,7 @@ class ReportController extends Controller
                     match($reportType) {
                         'feeding' => $q->where('batch_id', $id),
                         'growth' => $q->where('growth_records.batch_id', $id),
+                        'health' => $q->where('batch_id', $id),
                         'mortality' => $q->where('batch_id', $id),
                         'sales' => $q->where('sales.batch_id', $id),
                         default => $q->where('batch_id', $id),
@@ -386,6 +399,12 @@ class ReportController extends Controller
                     }
                 })->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))->get(),
             'growth' => GrowthRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '>=', $date))->get(),
+            'health' => HealthRecord::query()->with(['batch', 'user'])
+                ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '>=', $date))
+                ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '<=', $date))
+                ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)))
+                ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
+                ->get(),
             'mortality' => MortalityRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('mortality_date', '>=', $date))->get(),
             'sales' => Sale::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('sale_date', '>=', $date))->get(),
         ]);

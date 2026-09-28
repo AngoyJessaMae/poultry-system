@@ -43,6 +43,7 @@
                                     <option value="all" @if(($filters['report_type'] ?? '') == 'all') selected @endif>All</option>
                                     <option value="feeding" @if(($filters['report_type'] ?? '') == 'feeding') selected @endif>Feeding</option>
                                     <option value="growth" @if(($filters['report_type'] ?? '') == 'growth') selected @endif>Growth</option>
+                                    <option value="health" @if(($filters['report_type'] ?? '') == 'health') selected @endif>Health</option>
                                     <option value="mortality" @if(($filters['report_type'] ?? '') == 'mortality') selected @endif>Mortality</option>
                                     <option value="sales" @if(($filters['report_type'] ?? '') == 'sales') selected @endif>Sales</option>
                                 </select>
@@ -87,8 +88,9 @@
                     <div class="grid grid-cols-1 md:grid-cols-{{ 
                         ($filters['report_type'] ?? 'all') === 'feeding' ? '3' : 
                         (($filters['report_type'] ?? '') === 'growth' ? '2' : 
+                        (($filters['report_type'] ?? '') === 'health' ? '2' :
                         (($filters['report_type'] ?? '') === 'mortality' ? '2' : 
-                        (($filters['report_type'] ?? '') === 'sales' ? '2' : '6'))) 
+                        (($filters['report_type'] ?? '') === 'sales' ? '2' : '6'))))
                     }} gap-4 mt-4">
                         @if(($filters['report_type'] ?? 'all') === 'all' || ($filters['report_type'] ?? '') === 'feeding')
                         <div class="bg-blue-50 p-4 rounded-lg">
@@ -105,6 +107,12 @@
                             <h4 class="text-gray-600 text-sm">Growth Records</h4>
                             <p class="text-2xl font-bold">{{ $analytics['totalGrowthRecords'] }}</p>
                         </div>
+                        @endif
+                        @if(($filters['report_type'] ?? 'all') === 'all' || ($filters['report_type'] ?? '') === 'health')
+                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                                <h4 class="text-gray-600 text-sm">Health Records</h4>
+                                <p class="text-2xl font-bold">{{ $analytics['totalHealthRecords'] }}</p>
+                            </div>
                         @endif
                         @if(($filters['report_type'] ?? 'all') === 'all' || ($filters['report_type'] ?? '') === 'mortality')
                         <div class="bg-red-50 p-4 rounded-lg">
@@ -192,6 +200,15 @@
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Recorded</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Weight (g)</th>
+                                        @elseif($filters['report_type'] === 'health')
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Worker</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Affected</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dead</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recovered</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Observation</th>
                                         @elseif($filters['report_type'] === 'mortality')
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Station</th>
@@ -219,6 +236,15 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $record->recorded_date->format('Y-m-d') }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->batch->batch_code ?? 'N/A' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->average_weight_grams }}</td>
+                                        @elseif($filters['report_type'] === 'health')
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $record->recorded_date->format('Y-m-d') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->batch->batch_code ?? 'N/A' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->user->name ?? 'N/A' }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ str_replace('_', ' ', ucfirst($record->status)) }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->affected_count }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->dead_count }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->recovered_count }}</td>
+                                            <td class="px-6 py-4 text-sm text-gray-500">{{ $record->observation }}</td>
                                         @elseif($filters['report_type'] === 'mortality')
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $record->mortality_date->format('Y-m-d') }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->station->name ?? 'N/A' }}</td>

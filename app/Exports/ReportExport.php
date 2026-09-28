@@ -6,6 +6,7 @@ use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use App\Models\FeedingLog;
 use App\Models\GrowthRecord;
+use App\Models\HealthRecord;
 use App\Models\MortalityRecord;
 use App\Models\Sale;
 use App\Models\Report;
@@ -122,6 +123,12 @@ class ReportExport implements FromView
         // Additional overall analytics
         $totalFeedingLogs = $feedingRecords->count();
         $totalGrowthRecords = $growthRecords->count();
+        $totalHealthRecords = HealthRecord::query()
+            ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '>=', $date))
+            ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '<=', $date))
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)))
+            ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
+            ->count();
         $totalMortalityRecords = MortalityRecord::query()
             ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('mortality_date', '>=', $date))
             ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('mortality_date', '<=', $date))
@@ -145,6 +152,7 @@ class ReportExport implements FromView
             'workerFeedingActivity' => $workerFeedingActivity,
             'totalFeedingLogs' => $totalFeedingLogs,
             'totalGrowthRecords' => $totalGrowthRecords,
+            'totalHealthRecords' => $totalHealthRecords,
             'totalMortalityRecords' => $totalMortalityRecords,
             'totalSalesRecords' => $totalSalesRecords,
             'uniqueWorkers' => $uniqueWorkers,
@@ -158,6 +166,7 @@ class ReportExport implements FromView
         $query = match ($reportType) {
             'feeding' => FeedingLog::query(),
             'growth' => GrowthRecord::query(),
+            'health' => HealthRecord::query()->with(['batch', 'user']),
             'mortality' => MortalityRecord::query(),
             'sales' => Sale::query(),
             default => collect(),
@@ -169,6 +178,7 @@ class ReportExport implements FromView
                     match($reportType) {
                         'feeding' => $q->where('feeding_time', '>=', $date),
                         'growth' => $q->where('recorded_date', '>=', $date),
+                        'health' => $q->where('recorded_date', '>=', $date),
                         'mortality' => $q->where('mortality_date', '>=', $date),
                         'sales' => $q->where('sale_date', '>=', $date),
                         default => $q->where('created_at', '>=', $date),
@@ -178,6 +188,7 @@ class ReportExport implements FromView
                     match($reportType) {
                         'feeding' => $q->where('feeding_time', '<=', $date),
                         'growth' => $q->where('recorded_date', '<=', $date),
+                        'health' => $q->where('recorded_date', '<=', $date),
                         'mortality' => $q->where('mortality_date', '<=', $date),
                         'sales' => $q->where('sale_date', '<=', $date),
                         default => $q->where('created_at', '<=', $date),
@@ -187,6 +198,7 @@ class ReportExport implements FromView
                     match($reportType) {
                         'feeding' => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)),
                         'growth' => $q->where('batches.station_id', $id),
+                        'health' => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)),
                         'mortality' => $q->where('station_id', $id),
                         'sales' => $q->where('batches.station_id', $id),
                         default => $q->where('station_id', $id),
@@ -196,6 +208,7 @@ class ReportExport implements FromView
                     match($reportType) {
                         'feeding' => $q->where('batch_id', $id),
                         'growth' => $q->where('growth_records.batch_id', $id),
+                        'health' => $q->where('batch_id', $id),
                         'mortality' => $q->where('batch_id', $id),
                         'sales' => $q->where('sales.batch_id', $id),
                         default => $q->where('batch_id', $id),
@@ -207,6 +220,12 @@ class ReportExport implements FromView
         return collect([
             'feeding' => FeedingLog::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '>=', $date))->get(),
             'growth' => GrowthRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '>=', $date))->get(),
+            'health' => HealthRecord::query()->with(['batch', 'user'])
+                ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '>=', $date))
+                ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '<=', $date))
+                ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)))
+                ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
+                ->get(),
             'mortality' => MortalityRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('mortality_date', '>=', $date))->get(),
             'sales' => Sale::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('sale_date', '>=', $date))->get(),
         ]);

@@ -129,6 +129,15 @@
                             <th>Date Recorded</th>
                             <th>Batch</th>
                             <th>Avg Weight (g)</th>
+                        @elseif($type === 'health')
+                            <th>Date</th>
+                            <th>Batch</th>
+                            <th>Worker</th>
+                            <th>Status</th>
+                            <th>Affected</th>
+                            <th>Dead</th>
+                            <th>Recovered</th>
+                            <th>Observation</th>
                         @elseif($type === 'mortality')
                             <th>Date</th>
                             <th>Station</th>
@@ -156,6 +165,15 @@
                                 <td>{{ $record->recorded_date->format('Y-m-d') ?? 'N/A' }}</td>
                                 <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
                                 <td>{{ number_format($record->average_weight_g ?? 0, 2) }}</td>
+                            @elseif($type === 'health')
+                                <td>{{ $record->recorded_date->format('Y-m-d') }}</td>
+                                <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
+                                <td>{{ $record->user->name ?? 'N/A' }}</td>
+                                <td>{{ str_replace('_', ' ', ucfirst($record->status)) }}</td>
+                                <td>{{ $record->affected_count }}</td>
+                                <td>{{ $record->dead_count }}</td>
+                                <td>{{ $record->recovered_count }}</td>
+                                <td>{{ $record->observation }}</td>
                             @elseif($type === 'mortality')
                                 <td>{{ $record->mortality_date->format('Y-m-d') ?? 'N/A' }}</td>
                                 <td>{{ $record->station->name ?? 'N/A' }}</td>
@@ -192,6 +210,15 @@
                         <th>Date Recorded</th>
                         <th>Batch</th>
                         <th>Avg Weight (g)</th>
+                    @elseif($filters['report_type'] === 'health')
+                        <th>Date</th>
+                        <th>Batch</th>
+                        <th>Worker</th>
+                        <th>Status</th>
+                        <th>Affected</th>
+                        <th>Dead</th>
+                        <th>Recovered</th>
+                        <th>Observation</th>
                     @elseif($filters['report_type'] === 'mortality')
                         <th>Date</th>
                         <th>Station</th>
@@ -219,6 +246,15 @@
                             <td>{{ $record->recorded_date->format('Y-m-d') ?? 'N/A' }}</td>
                             <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
                             <td>{{ number_format($record->average_weight_g ?? 0, 2) }}</td>
+                        @elseif($filters['report_type'] === 'health')
+                            <td>{{ $record->recorded_date->format('Y-m-d') }}</td>
+                            <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
+                            <td>{{ $record->user->name ?? 'N/A' }}</td>
+                            <td>{{ str_replace('_', ' ', ucfirst($record->status)) }}</td>
+                            <td>{{ $record->affected_count }}</td>
+                            <td>{{ $record->dead_count }}</td>
+                            <td>{{ $record->recovered_count }}</td>
+                            <td>{{ $record->observation }}</td>
                         @elseif($filters['report_type'] === 'mortality')
                             <td>{{ $record->mortality_date->format('Y-m-d') ?? 'N/A' }}</td>
                             <td>{{ $record->station->name ?? 'N/A' }}</td>
