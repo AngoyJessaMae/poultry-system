@@ -34,7 +34,7 @@ class HealthRecordPolicy
 
     public function update(User $user, HealthRecord $healthRecord)
     {
-        return $user->isManager() || ($healthRecord->user_id === $user->id && $healthRecord->created_at->gt(now()->subHours(24)));
+        return $user->isManager() || $healthRecord->user_id === $user->id;
     }
 
     public function delete(User $user, HealthRecord $healthRecord)

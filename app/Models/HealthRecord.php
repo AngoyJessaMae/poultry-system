@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class HealthRecord extends Model
 {
@@ -40,6 +41,16 @@ class HealthRecord extends Model
     public function mortalityRecord(): BelongsTo
     {
         return $this->belongsTo(MortalityRecord::class);
+    }
+    
+    public function history(): HasMany
+    {
+        return $this->hasMany(HealthRecordHistory::class)->latest();
+    }
+    
+    public function getRecoveredCountAttribute(): int
+    {
+        return max(0, (int) $this->affected_count - (int) $this->dead_count);
     }
 
     protected $casts = [

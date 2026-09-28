@@ -30,6 +30,14 @@ class HealthRecordTest extends TestCase
         ]);
         $this->assertSame(18, $batch->fresh()->current_quantity);
         $this->assertNotNull($healthRecord->fresh()->mortality_record_id);
+        $this->assertDatabaseHas('health_record_histories', [
+            'health_record_id' => $healthRecord->id,
+            'user_id' => $worker->id,
+            'affected_count' => 5,
+            'dead_count' => 2,
+            'recovered_count' => 3,
+            'status' => 'recovering',
+        ]);
     }
 
     public function test_recovering_health_record_can_be_updated_without_dead_chickens(): void
@@ -53,6 +61,32 @@ class HealthRecordTest extends TestCase
         $this->assertDatabaseCount('mortality_records', 0);
         $this->assertSame(20, $batch->fresh()->current_quantity);
         $this->assertNull($healthRecord->fresh()->mortality_record_id);
+        $this->assertDatabaseCount('health_record_histories', 2);
+        $this->assertDatabaseHas('health_record_histories', [
+            'health_record_id' => $healthRecord->id,
+            'affected_count' => 4,
+            'dead_count' => 0,
+            'recovered_count' => 4,
+            'status' => 'recovered',
+        ]);
+    }
+
+    public function test_worker_can_update_a_health_record_older_than_24_hours(): void
+    {
+        [$worker, $batch] = $this->workerAndBatch(20);
+
+        $this->actingAs($worker)->post(route('worker.health-records.store'), $this->healthData($batch));
+
+        $healthRecord = $worker->healthRecords()->first();
+        $healthRecord->forceFill([
+            'created_at' => now()->subDays(2),
+        ])->save();
+
+        $this->actingAs($worker)->patch(route('worker.health-records.update', $healthRecord), $this->healthData($batch, [
+            'observation' => 'Updated after review',
+        ]))->assertRedirect(route('worker.health-records.index', absolute: false));
+
+        $this->assertSame('Updated after review', $healthRecord->fresh()->observation);
     }
 
     private function workerAndBatch(int $quantity): array

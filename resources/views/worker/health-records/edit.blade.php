@@ -35,7 +35,7 @@
                             <x-input-error :messages="$errors->get('recorded_date')" class="mt-2" />
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3 mt-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-4 mt-4">
                             <div>
                                 <x-input-label for="affected_count" :value="__('Affected Chickens')" />
                                 <x-text-input id="affected_count" class="block mt-1 w-full" type="number" name="affected_count" min="1" value="{{ old('affected_count', $healthRecord->affected_count) }}" required />
@@ -55,6 +55,11 @@
                                     <option value="dead" @selected(old('status', $healthRecord->status) === 'dead')>Dead</option>
                                 </select>
                                 <x-input-error :messages="$errors->get('status')" class="mt-2" />
+                            </div>
+                            <div>
+                                <x-input-label for="recovered_count" :value="__('Recovered Chickens')" />
+                                <x-text-input id="recovered_count" class="block mt-1 w-full bg-gray-100" type="number" value="{{ max(0, (int) old('affected_count', $healthRecord->affected_count) - (int) old('dead_count', $healthRecord->dead_count)) }}" readonly />
+                                <p class="mt-1 text-xs text-gray-500">Affected minus dead</p>
                             </div>
                         </div>
 
@@ -119,3 +124,18 @@
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    const affectedCountInput = document.getElementById('affected_count');
+    const deadCountInput = document.getElementById('dead_count');
+    const recoveredCountInput = document.getElementById('recovered_count');
+
+    function updateRecoveredCount() {
+        const affectedCount = Number(affectedCountInput.value) || 0;
+        const deadCount = Number(deadCountInput.value) || 0;
+        recoveredCountInput.value = Math.max(0, affectedCount - deadCount);
+    }
+
+    affectedCountInput.addEventListener('input', updateRecoveredCount);
+    deadCountInput.addEventListener('input', updateRecoveredCount);
+</script>

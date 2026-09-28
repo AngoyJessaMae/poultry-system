@@ -8,6 +8,7 @@ use App\Models\MortalityRecord;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use App\Models\HealthRecord;
+use App\Models\HealthRecordHistory;
 use Illuminate\Http\Request;
 
 class HealthRecordController extends Controller
@@ -41,6 +42,7 @@ class HealthRecordController extends Controller
         DB::transaction(function () use ($data) {
             $healthRecord = HealthRecord::create($data);
             $this->syncMortalityRecord($healthRecord);
+            $this->recordHistory($healthRecord);
         });
 
         $route = auth()->user()->isManager() ? 'manager.health-records.index' : 'worker.health-records.index';
@@ -50,6 +52,7 @@ class HealthRecordController extends Controller
     public function show(HealthRecord $healthRecord)
     {
         $this->authorize('view', $healthRecord);
+        $healthRecord->load(['batch', 'user', 'history.user']);
         $view = auth()->user()->isManager() ? 'manager.health-records.show' : 'worker.health-records.show';
         return view($view, compact('healthRecord'));
     }
@@ -69,6 +72,7 @@ class HealthRecordController extends Controller
         DB::transaction(function () use ($healthRecord, $data) {
             $healthRecord->update($data);
             $this->syncMortalityRecord($healthRecord->fresh(['batch', 'mortalityRecord']));
+            $this->recordHistory($healthRecord->fresh());
         });
 
         $route = auth()->user()->isManager() ? 'manager.health-records.index' : 'worker.health-records.index';
@@ -130,5 +134,17 @@ class HealthRecordController extends Controller
             $mortalityRecord = MortalityRecord::create($mortalityData);
             $healthRecord->update(['mortality_record_id' => $mortalityRecord->id]);
         }
+    }
+    
+    private function recordHistory(HealthRecord $healthRecord): void
+    {
+        HealthRecordHistory::create([
+            'health_record_id' => $healthRecord->id,
+            'user_id' => auth()->id(),
+            'affected_count' => $healthRecord->affected_count,
+            'dead_count' => $healthRecord->dead_count,
+            'recovered_count' => $healthRecord->recovered_count,
+            'status' => $healthRecord->status,
+        ]);
     }
 }
