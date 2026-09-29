@@ -39,6 +39,6 @@ class BatchPolicy
 
     public function delete(User $user, Batch $batch)
     {
-        return $user->isManager();
+        return $user->isManager() || $user->isWorker();
     }
 }

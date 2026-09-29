@@ -80,6 +80,11 @@
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $log->quantity }} kg</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('worker.feeding-logs.edit', $log) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                        <form action="{{ route('worker.feeding-logs.destroy', $log) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900 ml-4">Delete</button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach

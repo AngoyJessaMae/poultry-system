@@ -33,6 +33,9 @@ class ManagerAccessTest extends TestCase
             'is_active' => true,
         ]);
 
+        $this->get(route('account-policy', ['return_to' => 'login']))
+            ->assertOk();
+
         $this->post('/login', [
             'email' => $manager->email,
             'password' => 'password',

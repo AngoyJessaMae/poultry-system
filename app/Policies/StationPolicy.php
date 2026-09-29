@@ -49,8 +49,8 @@ class StationPolicy
      */
     public function delete(User $user, Station $station): bool
     {
-        // Only managers can delete stations
-        return $user->isManager();
+        // Managers and workers can delete stations
+        return $user->isManager() || $user->isWorker();
     }
 
     /**

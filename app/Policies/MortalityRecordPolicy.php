@@ -34,11 +34,11 @@ class MortalityRecordPolicy
 
     public function update(User $user, MortalityRecord $mortalityRecord)
     {
-        return $user->isManager() || ($mortalityRecord->user_id === $user->id && $mortalityRecord->created_at->gt(now()->subHours(24)));
+        return $user->isManager() || $user->isWorker();
     }
 
     public function delete(User $user, MortalityRecord $mortalityRecord)
     {
-        return $user->isManager() || ($mortalityRecord->user_id === $user->id && $mortalityRecord->created_at->gt(now()->subHours(24)));
+        return $user->isManager() || $user->isWorker();
     }
 }

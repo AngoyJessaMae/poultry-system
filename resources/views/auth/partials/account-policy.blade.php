@@ -1,7 +1,7 @@
 <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700" data-account-policy>
     <details id="account-policy-details" class="group">
         <summary class="flex cursor-pointer list-none items-center justify-between font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
-            <span>{{ __('Read Account and Work Process Policy') }}</span>
+            <span><a href="{{ route('account-policy', ['return_to' => request()->is('register') ? 'register' : 'login']) }}" class="underline hover:text-orange-600">{{ __('Read Account and Work Process Policy') }}</a></span>
             <span class="ml-4 text-lg text-slate-500 transition group-open:rotate-180" aria-hidden="true">&#8964;</span>
         </summary>
 

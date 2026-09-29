@@ -34,11 +34,11 @@ class GrowthRecordPolicy
 
     public function update(User $user, GrowthRecord $growthRecord)
     {
-        return $user->isManager() || ($growthRecord->user_id === $user->id && $growthRecord->created_at->gt(now()->subHours(24)));
+        return $user->isManager() || $user->isWorker();
     }
 
     public function delete(User $user, GrowthRecord $growthRecord)
     {
-        return $user->isManager() || $growthRecord->user_id === $user->id;
+        return $user->isManager() || $user->isWorker();
     }
 }

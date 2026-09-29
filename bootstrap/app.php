@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
+            'policy.accepted' => \App\Http\Middleware\EnsurePolicyAccepted::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -34,11 +34,11 @@ class SalePolicy
 
     public function update(User $user, Sale $sale)
     {
-        return $user->isManager() || ($sale->user_id === $user->id && $sale->created_at->gt(now()->subHours(24)));
+        return $user->isManager() || $user->isWorker();
     }
 
     public function delete(User $user, Sale $sale)
     {
-        return $user->isManager();
+        return $user->isManager() || $user->isWorker();
     }
 }

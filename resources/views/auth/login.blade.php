@@ -28,8 +28,6 @@
                 <p class="text-gray-500">Sign in to continue</p>
             </div>
 
-            @include('auth.partials.account-policy')
-
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
@@ -51,14 +49,6 @@
                         <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="remember">
                         <span class="ml-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
                     </label>
-                </div>
-
-                <div class="mt-4">
-                    <label for="policy_acknowledged" class="inline-flex items-start">
-                        <input id="policy_acknowledged" type="checkbox" class="mt-1 rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="policy_acknowledged" value="1" required>
-                        <span class="ml-2 text-sm text-gray-600">{{ __('I have read and agree to the Account and Work Process Policy.') }}</span>
-                    </label>
-                    <x-input-error :messages="$errors->get('policy_acknowledged')" class="mt-2" />
                 </div>
 
                 <div class="flex items-center justify-end mt-4">

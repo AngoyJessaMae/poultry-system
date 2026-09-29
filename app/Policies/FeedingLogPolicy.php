@@ -34,11 +34,11 @@ class FeedingLogPolicy
 
     public function update(User $user, FeedingLog $feedingLog)
     {
-        return $user->isManager() || ($feedingLog->user_id === $user->id && $feedingLog->created_at->gt(now()->subHours(24)));
+        return $user->isManager() || $user->isWorker();
     }
 
     public function delete(User $user, FeedingLog $feedingLog)
     {
-        return $user->isManager();
+        return $user->isManager() || $user->isWorker();
     }
 }

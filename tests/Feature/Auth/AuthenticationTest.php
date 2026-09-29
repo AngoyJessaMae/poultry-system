@@ -19,16 +19,22 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'policy_revision' => null,
+            'policy_viewed_at' => null,
+            'policy_accepted_at' => null,
+        ]);
 
         $response = $this->post('/login', [
             'email' => $user->email,
             'password' => 'password',
-            'policy_acknowledged' => '1',
         ]);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('worker.dashboard', absolute: false));
+        $response->assertRedirect(route('account-policy', ['return_to' => 'dashboard'], absolute: false));
+        $this->get(route('account-policy', ['return_to' => 'dashboard']))->assertOk();
+        $this->post(route('account-policy.accept'), ['policy_acknowledged' => '1'])
+            ->assertRedirect(route('worker.dashboard', absolute: false));
+        $this->assertAuthenticatedAs($user->fresh());
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
@@ -45,16 +51,51 @@ class AuthenticationTest extends TestCase
 
     public function test_users_must_acknowledge_the_policy_before_authenticating(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'policy_revision' => null,
+            'policy_viewed_at' => null,
+            'policy_accepted_at' => null,
+        ]);
 
         $response = $this->from('/login')->post('/login', [
             'email' => $user->email,
             'password' => 'password',
         ]);
 
-        $response->assertRedirect('/login');
-        $response->assertSessionHasErrors('policy_acknowledged');
-        $this->assertGuest();
+        $response->assertRedirect(route('account-policy', ['return_to' => 'dashboard'], absolute: false));
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_users_with_an_outdated_policy_are_sent_to_reaccept_it(): void
+    {
+        $user = User::factory()->create([
+            'policy_revision' => 'old-revision',
+            'policy_accepted_at' => now(),
+        ]);
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertRedirect(route('account-policy', ['return_to' => 'dashboard'], absolute: false));
+
+        $this->get(route('account-policy', ['return_to' => 'dashboard']))->assertOk();
+        $this->post(route('account-policy.accept'), ['policy_acknowledged' => '1'])
+            ->assertRedirect(route('worker.dashboard', absolute: false));
+
+        $this->assertAuthenticatedAs($user->fresh());
+        $this->assertSame(config('policy.revision'), $user->fresh()->policy_revision);
+    }
+
+    public function test_authenticated_users_with_an_outdated_policy_cannot_enter_the_dashboard(): void
+    {
+        $user = User::factory()->create([
+            'policy_revision' => 'old-revision',
+            'policy_accepted_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('worker.dashboard'))
+            ->assertRedirect(route('account-policy', absolute: false).'?return_to=dashboard');
     }
 
     public function test_users_can_logout(): void

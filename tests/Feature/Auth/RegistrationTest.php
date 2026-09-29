@@ -24,11 +24,18 @@ class RegistrationTest extends TestCase
             'contact_number' => '09859945478',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'policy_acknowledged' => '1',
         ]);
+
+        $response->assertRedirect(route('account-policy', ['return_to' => 'register'], absolute: false));
+        $this->get(route('account-policy', ['return_to' => 'register']))->assertOk();
+        $response = $this->post(route('account-policy.accept'), ['policy_acknowledged' => '1']);
 
         $this->assertGuest();
         $response->assertRedirect(route('login', absolute: false));
+        $this->assertDatabaseHas('users', [
+            'email' => 'test@example.com',
+            'policy_revision' => config('policy.revision'),
+        ]);
     }
 
     public function test_registration_rejects_contact_numbers_that_are_not_exactly_11_digits(): void
@@ -56,7 +63,7 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'password',
         ]);
 
-        $response->assertRedirect('/register');
+        $response->assertRedirect(route('account-policy', ['return_to' => 'register'], absolute: false));
         $response->assertSessionHasErrors('policy_acknowledged');
     }
 }

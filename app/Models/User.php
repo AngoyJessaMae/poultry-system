@@ -26,6 +26,9 @@ class User extends Authenticatable
         'password',
         'role',
         'is_active',
+        'policy_revision',
+        'policy_viewed_at',
+        'policy_accepted_at',
     ];
 
     /**
@@ -48,7 +51,24 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'policy_viewed_at' => 'datetime',
+            'policy_accepted_at' => 'datetime',
         ];
+    }
+
+    public function hasAcceptedCurrentPolicy(): bool
+    {
+        return $this->policy_revision === config('policy.revision')
+            && $this->policy_accepted_at !== null;
+    }
+
+    public function acceptCurrentPolicy(?string $viewedAt = null): void
+    {
+        $this->forceFill([
+            'policy_revision' => config('policy.revision'),
+            'policy_viewed_at' => $viewedAt ?? now(),
+            'policy_accepted_at' => now(),
+        ])->save();
     }
 
     public function isManager(): bool

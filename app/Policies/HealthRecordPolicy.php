@@ -39,6 +39,6 @@ class HealthRecordPolicy
 
     public function delete(User $user, HealthRecord $healthRecord)
     {
-        return $user->isManager();
+        return $user->isManager() || $user->isWorker();
     }
 }

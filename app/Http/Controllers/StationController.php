@@ -6,6 +6,7 @@ use App\Http\Requests\StoreStationRequest;
 use App\Http\Requests\UpdateStationRequest;
 use App\Models\Station;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 use App\Enums\FeedingMethod;
 use App\Models\FeedingSchedule;
 
@@ -60,8 +61,27 @@ class StationController extends Controller
     public function destroy(Station $station)
     {
         $this->authorize('delete', $station);
-        $station->delete();
+
         $route = auth()->user()->isManager() ? 'manager.stations.index' : 'worker.stations.index';
+
+        if ($station->batches()->exists()) {
+            return redirect()->route($route)->withErrors([
+                'station' => 'This station cannot be deleted while it has assigned batches. Move or delete the batches first.',
+            ]);
+        }
+
+        try {
+            $station->delete();
+        } catch (QueryException $exception) {
+            if ($exception->getCode() !== '23000') {
+                throw $exception;
+            }
+
+            return redirect()->route($route)->withErrors([
+                'station' => 'This station cannot be deleted because it is still being used by another record.',
+            ]);
+        }
+
         return redirect()->route($route);
     }
 }

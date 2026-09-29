@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateBatchRequest;
 use App\Http\Requests\StoreBatchRequest;
 use App\Models\Batch;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 
 class BatchController extends Controller
@@ -61,8 +62,36 @@ class BatchController extends Controller
     public function destroy(Batch $batch)
     {
         $this->authorize('delete', $batch);
-        $batch->delete();
         $route = auth()->user()->isManager() ? 'manager.batches.index' : 'worker.batches.index';
+
+        $dependencies = [
+            'feeding logs' => $batch->feedingLogs()->exists(),
+            'growth records' => $batch->growthRecords()->exists(),
+            'health records' => $batch->healthRecords()->exists(),
+            'mortality records' => $batch->mortalityRecords()->exists(),
+            'sales' => $batch->sales()->exists(),
+            'movement records' => $batch->movements()->exists(),
+        ];
+
+        $usedBy = array_keys(array_filter($dependencies));
+        if ($usedBy !== []) {
+            return redirect()->route($route)->withErrors([
+                'batch' => 'This batch cannot be deleted while it has associated records: ' . implode(', ', $usedBy) . '. Preserve or remove those records first.',
+            ]);
+        }
+
+        try {
+            $batch->delete();
+        } catch (QueryException $exception) {
+            if ($exception->getCode() !== '23000') {
+                throw $exception;
+            }
+
+            return redirect()->route($route)->withErrors([
+                'batch' => 'This batch cannot be deleted because it is still being used by another record.',
+            ]);
+        }
+
         return redirect()->route($route);
     }
 }

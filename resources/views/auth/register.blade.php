@@ -27,8 +27,6 @@
         <p class="text-gray-500 mt-2">Register as a new worker to get started</p>
     </div>
 
-    @include('auth.partials.account-policy')
-
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
@@ -93,14 +91,6 @@
                 <x-text-input id="password_confirmation" class="block mt-1 w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all" type="password" name="password_confirmation" required autocomplete="new-password" placeholder="••••••••" />
             </div>
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="mb-8">
-            <label for="policy_acknowledged" class="inline-flex items-start">
-                <input id="policy_acknowledged" type="checkbox" class="mt-1 rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="policy_acknowledged" value="1" required @checked(old('policy_acknowledged'))>
-                <span class="ml-2 text-sm text-gray-600">{{ __('I have read and agree to the Account and Work Process Policy.') }}</span>
-            </label>
-            <x-input-error :messages="$errors->get('policy_acknowledged')" class="mt-2" />
         </div>
 
         <x-primary-button class="w-full justify-center py-3 text-base font-semibold bg-brand-orange-alt hover:bg-orange-500 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">

@@ -22,7 +22,7 @@ Route::get('/', function () {
 require __DIR__.'/auth.php';
 
 // 2. Shared authenticated routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'policy.accepted'])->group(function () {
     Route::get('/dashboard', function () {
         if (auth()->user()->isManager()) {
             return redirect()->route('manager.users.index');
@@ -42,7 +42,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // 3. Manager-only group
-Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')->group(function () {
+Route::middleware(['auth', 'verified', 'policy.accepted', 'role:manager'])->prefix('manager')->name('manager.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'managerDashboard'])->name('dashboard');
 
     Route::resource('users', UserController::class);
@@ -50,7 +50,7 @@ Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')
 });
 
 // 4. Worker-only group
-Route::middleware(['auth', 'role:worker'])->prefix('worker')->name('worker.')->group(function () {
+Route::middleware(['auth', 'verified', 'policy.accepted', 'role:worker'])->prefix('worker')->name('worker.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'workerDashboard'])->name('dashboard');
 
     Route::resource('stations', StationController::class);
@@ -58,11 +58,11 @@ Route::middleware(['auth', 'role:worker'])->prefix('worker')->name('worker.')->g
 
     Route::get('feeding-logs/select-batch', [FeedingLogController::class, 'selectBatch'])->name('feeding-logs.select-batch');
     Route::post('feeding-logs/create-for-batch', [FeedingLogController::class, 'createForBatch'])->name('feeding-logs.create-for-batch');
-    Route::resource('feeding-logs', FeedingLogController::class)->except(['create', 'store', 'destroy']);
+    Route::resource('feeding-logs', FeedingLogController::class)->except(['create', 'store']);
     Route::get('batches/{batch}/feeding-logs/create', [FeedingLogController::class, 'create'])->name('batches.feeding-logs.create');
     Route::post('batches/{batch}/feeding-logs', [FeedingLogController::class, 'store'])->name('batches.feeding-logs.store');
     Route::resource('growth-records', GrowthRecordController::class);
-    Route::resource('health-records', HealthRecordController::class)->except(['destroy']);
+    Route::resource('health-records', HealthRecordController::class);
     Route::resource('mortality-records', MortalityRecordController::class);
-    Route::resource('sales', SaleController::class)->except(['destroy']);
+    Route::resource('sales', SaleController::class);
 });

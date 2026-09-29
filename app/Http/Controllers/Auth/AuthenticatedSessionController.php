@@ -27,10 +27,7 @@ class AuthenticatedSessionController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
-            'policy_acknowledged' => ['accepted'],
         ]);
-
-        unset($credentials['policy_acknowledged']);
 
         // Check if credentials are valid first
         if (!Auth::attempt($credentials)) {
@@ -50,6 +47,10 @@ class AuthenticatedSessionController extends Controller
         }
 
         $request->session()->regenerate();
+
+        if (!$user->hasAcceptedCurrentPolicy()) {
+            return redirect()->route('account-policy', ['return_to' => 'dashboard']);
+        }
 
         if ($user->isManager()) {
             return redirect()->intended(route('manager.dashboard', absolute: false));
