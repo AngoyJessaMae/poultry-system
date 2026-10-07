@@ -25,6 +25,7 @@ class PolicyController extends Controller
         return view('auth.policy', [
             'policyRevision' => config('policy.revision'),
             'returnTo' => $returnTo,
+            'hasAcceptedPolicy' => $request->user()?->hasAcceptedCurrentPolicy() ?? false,
         ]);
     }
 
