@@ -110,4 +110,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Report::class, 'generated_by');
     }
+
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
+    public function currentSession()
+    {
+        return $this->hasOne(ActivityLog::class)->whereNull('logout_at')->where('activity_type', 'login')->latest();
+    }
 }

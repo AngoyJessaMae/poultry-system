@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\ActivityLogger;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
@@ -48,6 +49,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Log the successful login
+        ActivityLogger::logLogin($user);
+
         if (!$user->hasAcceptedCurrentPolicy()) {
             return redirect()->route('account-policy', ['return_to' => 'dashboard']);
         }
@@ -68,6 +72,12 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+        if ($user) {
+            // Log the logout
+            ActivityLogger::logLogout($user);
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

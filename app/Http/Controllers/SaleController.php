@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ActivityLogger;
 use App\Http\Requests\StoreSaleRequest;
 use App\Models\Batch;
 use App\Models\Sale;
@@ -48,7 +49,10 @@ class SaleController extends Controller
 
                 $saleData = $data;
                 $saleData['user_id'] = auth()->id();
-                Sale::create($saleData);
+                $sale = Sale::create($saleData);
+                
+                // Log the activity
+                ActivityLogger::logActivity(auth()->user(), 'create-sale', "Created sale #{$sale->id} for batch {$batch->name} with {$data['heads_sold']} birds sold");
             });
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['heads_sold' => $e->getMessage()]);
@@ -93,6 +97,9 @@ class SaleController extends Controller
                 $batch->decrement('current_quantity', $difference);
 
                 $sale->update($data);
+                
+                // Log the activity
+                ActivityLogger::logActivity(auth()->user(), 'update-sale', "Updated sale #{$sale->id} for batch {$batch->name} - new heads sold {$data['heads_sold']}");
             });
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['heads_sold' => $e->getMessage()]);
@@ -106,12 +113,21 @@ class SaleController extends Controller
     {
         $this->authorize('delete', $sale);
 
+        // Preserve metadata before deletion
+        $sale->load('batch');
+        $batchName = $sale->batch->name;
+        $saleId = $sale->id;
+        $headsSold = $sale->heads_sold;
+        
         try {
             DB::transaction(function () use ($sale) {
                 $batch = Batch::lockForUpdate()->find($sale->batch_id);
                 $batch->increment('current_quantity', $sale->heads_sold);
                 $sale->delete();
             });
+            
+            // Log the activity
+            ActivityLogger::logActivity(auth()->user(), 'delete-sale', "Deleted sale #{$saleId} from batch {$batchName} with {$headsSold} birds returned to inventory");
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['error' => 'An error occurred while deleting the sale.']);
         }

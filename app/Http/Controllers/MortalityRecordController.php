@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ActivityLogger;
 use App\Http\Requests\StoreMortalityRecordRequest;
 use App\Models\MortalityRecord;
 use Illuminate\Http\Request;
@@ -59,6 +60,9 @@ class MortalityRecordController extends Controller
                     'below_expected_reason' => 'High Mortality Rate',
                 ]);
             }
+            
+            // Log the activity
+            ActivityLogger::logActivity(auth()->user(), 'create-mortality-record', "Created mortality record #{$mortalityRecord->id} for batch {$batch->name} with {$data['count']} birds affected");
         });
 
         $route = auth()->user()->isManager() ? 'manager.mortality-records.index' : 'worker.mortality-records.index';
@@ -94,8 +98,11 @@ class MortalityRecordController extends Controller
             return back()->withErrors(['count' => 'Mortality count cannot be greater than the current batch quantity.'])->withInput();
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($mortalityRecord, $data) {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($mortalityRecord, $data, $batch) {
             $mortalityRecord->update($data);
+            
+            // Log the activity
+            ActivityLogger::logActivity(auth()->user(), 'update-mortality-record', "Updated mortality record #{$mortalityRecord->id} for batch {$batch->name} - new count {$data['count']}");
         });
         $route = auth()->user()->isManager() ? 'manager.mortality-records.index' : 'worker.mortality-records.index';
         return redirect()->route($route);
@@ -104,7 +111,16 @@ class MortalityRecordController extends Controller
     public function destroy(MortalityRecord $mortalityRecord)
     {
         $this->authorize('delete', $mortalityRecord);
+        // Preserve metadata before deletion
+        $mortalityRecord->load('batch');
+        $batchName = $mortalityRecord->batch->name;
+        $mortalityRecordId = $mortalityRecord->id;
+        
         $mortalityRecord->delete();
+        
+        // Log the activity
+        ActivityLogger::logActivity(auth()->user(), 'delete-mortality-record', "Deleted mortality record #{$mortalityRecordId} from batch {$batchName}");
+        
         $route = auth()->user()->isManager() ? 'manager.mortality-records.index' : 'worker.mortality-records.index';
         return redirect()->route($route);
     }

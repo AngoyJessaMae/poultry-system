@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StationController;
@@ -47,6 +48,11 @@ Route::middleware(['auth', 'verified', 'policy.accepted', 'role:manager'])->pref
 
     Route::resource('users', UserController::class);
     Route::patch('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate'); // Route to activate pending workers
+
+    // Activity Logs routes
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('/activity-logs/history', [ActivityLogController::class, 'history'])->name('activity-logs.history');
+    Route::get('/activity-logs/{user}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
 });
 
 // 4. Worker-only group

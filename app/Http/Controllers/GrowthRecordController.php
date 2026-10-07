@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ActivityLogger;
 use App\Http\Requests\StoreGrowthRecordRequest;
 use App\Models\Batch;
 use App\Models\GrowthRecord;
@@ -40,7 +41,10 @@ class GrowthRecordController extends Controller
         $data['growth_stage'] = $this->growthStage($data['age_days'], $data['average_weight_grams']);
         $data['user_id'] = auth()->id();
 
-        GrowthRecord::create($data);
+        $growthRecord = GrowthRecord::create($data);
+
+        // Log the activity
+        ActivityLogger::logActivity(auth()->user(), 'create-growth-record', "Created growth record #{$growthRecord->id} for batch {$batch->name} with average weight {$data['average_weight_grams']}g");
 
         $route = auth()->user()->isManager() ? 'manager.growth-records.index' : 'worker.growth-records.index';
         return redirect()->route($route);
@@ -68,6 +72,10 @@ class GrowthRecordController extends Controller
         $data['age_days'] = $this->ageOnDate($batch, $data['recorded_date']);
         $data['growth_stage'] = $this->growthStage($data['age_days'], $data['average_weight_grams']);
         $growthRecord->update($data);
+
+        // Log the activity
+        ActivityLogger::logActivity(auth()->user(), 'update-growth-record', "Updated growth record #{$growthRecord->id} for batch {$batch->name} - new average weight {$data['average_weight_grams']}g");
+
         $route = auth()->user()->isManager() ? 'manager.growth-records.index' : 'worker.growth-records.index';
         return redirect()->route($route);
     }
@@ -94,7 +102,13 @@ class GrowthRecordController extends Controller
     public function destroy(GrowthRecord $growthRecord)
     {
         $this->authorize('delete', $growthRecord);
+        $batchName = $growthRecord->batch->name;
+        $growthRecordId = $growthRecord->id;
         $growthRecord->delete();
+
+        // Log the activity
+        ActivityLogger::logActivity(auth()->user(), 'delete-growth-record', "Deleted growth record #{$growthRecordId} from batch {$batchName}");
+
         $route = auth()->user()->isManager() ? 'manager.growth-records.index' : 'worker.growth-records.index';
         return redirect()->route($route);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ActivityLogger;
 use App\Http\Requests\StoreFeedingLogRequest;
 use App\Models\Batch;
 use App\Models\FeedingLog;
@@ -53,7 +54,10 @@ class FeedingLogController extends Controller
             'feeding_time' => 'required|date',
         ]);
 
-        $batch->feedingLogs()->create($data + ['user_id' => auth()->id()]);
+        $feedingLog = $batch->feedingLogs()->create($data + ['user_id' => auth()->id()]);
+        
+        // Log the activity
+        ActivityLogger::logActivity(auth()->user(), 'create-feeding-log', "Created feeding log for batch {$batch->name}: {$data['quantity']}kg of {$data['feed_type']}");
 
         return redirect()->route('worker.feeding-logs.index')->with('success', 'Feeding logged successfully.');
     }
@@ -76,6 +80,10 @@ class FeedingLogController extends Controller
     {
         $this->authorize('update', $feedingLog);
         $feedingLog->update($request->validated());
+        
+        // Log the activity
+        ActivityLogger::logActivity(auth()->user(), 'update-feeding-log', "Updated feeding log #{$feedingLog->id} for batch {$feedingLog->batch->name}");
+        
         $route = auth()->user()->isManager() ? 'manager.feeding-logs.index' : 'worker.feeding-logs.index';
         return redirect()->route($route);
     }
@@ -83,7 +91,13 @@ class FeedingLogController extends Controller
     public function destroy(FeedingLog $feedingLog)
     {
         $this->authorize('delete', $feedingLog);
+        $batchName = $feedingLog->batch->name;
+        $feedingLogId = $feedingLog->id;
         $feedingLog->delete();
+        
+        // Log the activity
+        ActivityLogger::logActivity(auth()->user(), 'delete-feeding-log', "Deleted feeding log #{$feedingLogId} from batch {$batchName}");
+        
         $route = auth()->user()->isManager() ? 'manager.feeding-logs.index' : 'worker.feeding-logs.index';
         return redirect()->route($route);
     }

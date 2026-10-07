@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ActivityLogger;
 use App\Http\Requests\StoreHealthRecordRequest;
 use App\Models\Batch;
 use App\Models\MortalityRecord;
@@ -43,6 +44,10 @@ class HealthRecordController extends Controller
             $healthRecord = HealthRecord::create($data);
             $this->syncMortalityRecord($healthRecord);
             $this->recordHistory($healthRecord);
+            
+            // Log the activity
+            $batch = Batch::find($data['batch_id']);
+            ActivityLogger::logActivity(auth()->user(), 'create-health-record', "Created health record #{$healthRecord->id} for batch {$batch->name} with {$data['affected_count']} affected birds");
         });
 
         $route = auth()->user()->isManager() ? 'manager.health-records.index' : 'worker.health-records.index';
@@ -73,6 +78,10 @@ class HealthRecordController extends Controller
             $healthRecord->update($data);
             $this->syncMortalityRecord($healthRecord->fresh(['batch', 'mortalityRecord']));
             $this->recordHistory($healthRecord->fresh());
+            
+            // Log the activity
+            $batch = $healthRecord->batch;
+            ActivityLogger::logActivity(auth()->user(), 'update-health-record', "Updated health record #{$healthRecord->id} for batch {$batch->name} - new affected count {$data['affected_count']}");
         });
 
         $route = auth()->user()->isManager() ? 'manager.health-records.index' : 'worker.health-records.index';
@@ -83,11 +92,19 @@ class HealthRecordController extends Controller
     {
         $this->authorize('delete', $healthRecord);
 
+        // Preserve metadata before deletion
+        $healthRecord->load('batch');
+        $batchName = $healthRecord->batch->name;
+        $healthRecordId = $healthRecord->id;
+        
         DB::transaction(function () use ($healthRecord) {
             $healthRecord->load('mortalityRecord');
             $healthRecord->mortalityRecord?->delete();
             $healthRecord->delete();
         });
+        
+        // Log the activity
+        ActivityLogger::logActivity(auth()->user(), 'delete-health-record', "Deleted health record #{$healthRecordId} from batch {$batchName}");
 
         $route = auth()->user()->isManager() ? 'manager.health-records.index' : 'worker.health-records.index';
         return redirect()->route($route);
