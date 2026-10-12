@@ -65,7 +65,7 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feed Type</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity (g)</th>
                                 <th scope="col" class="relative px-6 py-3">
                                     <span class="sr-only">Edit</span>
                                 </th>
@@ -77,7 +77,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($log->feeding_time)->format('Y-m-d g:i A') }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $log->batch->batch_code }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $log->feed_type }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $log->quantity }} kg</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $log->quantity }} g</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('worker.feeding-logs.edit', $log) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                         <form action="{{ route('worker.feeding-logs.destroy', $log) }}" method="POST" class="inline">

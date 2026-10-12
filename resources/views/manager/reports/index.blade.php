@@ -1,11 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Reports') }}
-        </h2>
+        <div class="flex items-center justify-between gap-4">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Reports') }}
+            </h2>
+            <div class="print:hidden">
+                <a href="{{ route('reports.daily.index') }}" class="inline-flex items-center px-4 py-2 bg-orange-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
+                    Daily Production Report
+                </a>
+            </div>
+        </div>
     </x-slot>
 
-    <div class="py-12">
+    <div id="report-content" class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
@@ -60,7 +67,14 @@
 
             <div class="mt-8 bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">Core Analytics</h3>
+                    <div class="flex items-center justify-between gap-4">
+                        <h3 class="text-lg font-medium text-gray-900">Core Analytics</h3>
+                        @if(($filters['start_date'] ?? '') || ($filters['end_date'] ?? '') || ($filters['station_id'] ?? '') || ($filters['batch_id'] ?? '') || (($filters['report_type'] ?? 'all') !== 'all'))
+                            <button type="button" id="print-report" class="print:hidden inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                                Print Report
+                            </button>
+                        @endif
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
                         <div class="bg-gray-100 p-4 rounded-lg">
                             <h4 class="text-gray-600">Feed-to-Weight Ratio</h4>
@@ -313,4 +327,31 @@
             </div>
         </div>
     </div>
+
+    <style>
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #report-content,
+            #report-content * {
+                visibility: visible;
+            }
+
+            #report-content {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                padding: 0;
+            }
+
+            #report-content .print\:hidden {
+                display: none !important;
+            }
+        }
+    </style>
+    <script>
+        document.getElementById('print-report')?.addEventListener('click', () => window.print());
+    </script>
 </x-app-layout>

@@ -23,7 +23,9 @@ class UpdateBatchRequest extends FormRequest
     {
         return [
             'batch_code' => 'sometimes|string|max:255',
+            'farm_name' => 'sometimes|nullable|string|max:255',
             'station_id' => 'sometimes|exists:stations,id',
+            'flockman_id' => 'sometimes|nullable|exists:users,id',
             'arrival_date' => 'sometimes|date',
             'initial_quantity' => 'sometimes|integer|min:1',
             'current_quantity' => 'sometimes|integer|min:0',

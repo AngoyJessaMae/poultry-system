@@ -24,8 +24,10 @@ class Batch extends Model
 
     protected $fillable = [
         'batch_code',
+        'farm_name',
         'station_id',
         'created_by',
+        'flockman_id',
         'arrival_date',
         'initial_quantity',
         'current_quantity',
@@ -50,6 +52,16 @@ class Batch extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function flockman(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'flockman_id');
+    }
+
+    public function dailyProductionRecords(): HasMany
+    {
+        return $this->hasMany(DailyProductionRecord::class);
     }
 
     public function feedingLogs(): HasMany
@@ -103,7 +115,7 @@ class Batch extends Model
 
     public function getCurrentAgeAttribute(): int
     {
-        return Carbon::parse($this->arrival_date)->diffInDays(Carbon::now());
+        return (int) Carbon::parse($this->arrival_date)->diffInDays(Carbon::now()) + 1;
     }
 
     public function getLatestAverageWeightAttribute(): ?float

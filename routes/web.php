@@ -11,6 +11,7 @@ use App\Http\Controllers\HealthRecordController;
 use App\Http\Controllers\MortalityRecordController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DailyProductionReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,13 @@ Route::middleware(['auth', 'verified', 'policy.accepted'])->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('manager.reports.index');
     Route::get('/reports/export/pdf', [ReportController::class, 'exportPdf'])->name('manager.reports.export.pdf');
     Route::get('/reports/export/excel', [ReportController::class, 'exportExcel'])->name('manager.reports.export.excel');
+    Route::get('/reports/daily', [DailyProductionReportController::class, 'index'])->name('reports.daily.index');
+    Route::get('/reports/daily/{batch}', [DailyProductionReportController::class, 'show'])->name('reports.daily.show');
+    Route::put('/reports/daily/{batch}/header', [DailyProductionReportController::class, 'updateHeader'])->name('reports.daily.header.update');
+    Route::put('/reports/daily/{batch}/row', [DailyProductionReportController::class, 'upsertRow'])->name('reports.daily.row.update');
+    Route::put('/reports/daily/standards', [DailyProductionReportController::class, 'upsertStandard'])->name('reports.daily.standard.update');
+    Route::get('/reports/daily/{batch}/export/pdf', [DailyProductionReportController::class, 'exportPdf'])->name('reports.daily.export.pdf');
+    Route::get('/reports/daily/{batch}/export/excel', [DailyProductionReportController::class, 'exportExcel'])->name('reports.daily.export.excel');
 });
 
 // 3. Manager-only group

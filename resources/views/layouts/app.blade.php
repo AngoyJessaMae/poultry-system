@@ -20,7 +20,7 @@
             <!-- Sidebar -->
             @include('layouts.sidebar')
 
-            <div class="flex-1 flex flex-col">
+            <div class="flex-1 min-w-0 flex flex-col">
                 <!-- Top Navigation -->
                 @include('layouts.navigation')
 
@@ -32,7 +32,7 @@
                 </header>
 
                 <!-- Page Content -->
-                <main class="flex-1 bg-gray-50">
+                <main class="flex-1 min-w-0 overflow-x-hidden bg-gray-50">
                     {{ $slot }}
                 </main>
             </div>

@@ -57,7 +57,7 @@ class FeedingLogController extends Controller
         $feedingLog = $batch->feedingLogs()->create($data + ['user_id' => auth()->id()]);
         
         // Log the activity
-        ActivityLogger::logActivity(auth()->user(), 'create-feeding-log', "Created feeding log for batch {$batch->name}: {$data['quantity']}kg of {$data['feed_type']}");
+        ActivityLogger::logActivity(auth()->user(), 'create-feeding-log', "Created feeding log for batch {$batch->name}: {$data['quantity']}g of {$data['feed_type']}");
 
         return redirect()->route('worker.feeding-logs.index')->with('success', 'Feeding logged successfully.');
     }

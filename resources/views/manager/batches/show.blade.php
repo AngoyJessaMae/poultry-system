@@ -72,7 +72,7 @@
                                             <p class="text-sm text-gray-500">
                                                 @switch(class_basename($item))
                                                     @case('FeedingLog')
-                                                        Fed {{ $item->quantity }} kg of {{ $item->feed_type }}.
+                                                        Fed {{ $item->quantity }} g of {{ $item->feed_type }}.
                                                         @break
                                                     @case('GrowthRecord')
                                                         Average weight: {{ number_format($item->avg_weight, 2) }} g.

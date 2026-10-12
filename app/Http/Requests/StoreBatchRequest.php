@@ -24,7 +24,9 @@ class StoreBatchRequest extends FormRequest
     {
         return [
             'batch_code' => 'required|string|max:255|unique:batches,batch_code,' . $this->route('batch')?->id,
+            'farm_name' => 'nullable|string|max:255',
             'station_id' => 'required|exists:stations,id',
+            'flockman_id' => 'nullable|exists:users,id',
             'arrival_date' => 'required|date',
             'initial_quantity' => 'required|integer|min:1',
             'initial_weight_grams' => 'required|numeric|min:0',

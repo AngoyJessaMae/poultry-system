@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Models\Batch;
+use App\Models\Station;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -23,6 +25,39 @@ class ManagerAccessTest extends TestCase
 
         $this->actingAs($manager)
             ->get(route('manager.reports.index'))
+            ->assertOk();
+    }
+
+    public function test_manager_can_filter_all_reports_by_station_and_batch(): void
+    {
+        $manager = User::factory()->create([
+            'role' => 'manager',
+            'is_active' => true,
+        ]);
+        $station = Station::create([
+            'name' => 'Report Filter Station',
+            'min_age_days' => 1,
+            'max_age_days' => 60,
+        ]);
+        $batch = Batch::create([
+            'batch_code' => 'REPORT-FILTER-' . uniqid(),
+            'station_id' => $station->id,
+            'created_by' => $manager->id,
+            'arrival_date' => now()->subDays(3),
+            'initial_quantity' => 100,
+            'initial_weight_grams' => 45,
+            'feeding_method' => 'twice_daily',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($manager)
+            ->get(route('manager.reports.index', [
+                'start_date' => now()->subMonth()->toDateString(),
+                'end_date' => now()->toDateString(),
+                'station_id' => $station->id,
+                'batch_id' => $batch->id,
+                'report_type' => 'all',
+            ]))
             ->assertOk();
     }
 

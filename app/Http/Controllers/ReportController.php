@@ -397,7 +397,7 @@ class ReportController extends Controller
                     } catch (\Exception $e) {
                         $q->where('feeding_time', '<=', $date);
                     }
-                })->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))->get(),
+                })->when($filters['station_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)))->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))->get(),
             'growth' => GrowthRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '>=', $date))->get(),
             'health' => HealthRecord::query()->with(['batch', 'user'])
                 ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '>=', $date))

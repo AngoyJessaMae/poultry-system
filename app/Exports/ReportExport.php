@@ -73,7 +73,7 @@ class ReportExport implements FromView
         $totalMortality = MortalityRecord::query()
             ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('mortality_date', '>=', $date))
             ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('mortality_date', '<=', $date))
-            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)))
             ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
             ->sum('count');
 
@@ -101,7 +101,7 @@ class ReportExport implements FromView
             ->with('user') // Eager load user relationship
             ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '>=', $date))
             ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('feeding_time', '<=', $date))
-            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('station_id', $id))
+            ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->whereHas('batch', fn ($batchQuery) => $batchQuery->where('station_id', $id)))
             ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
             ->get();
         

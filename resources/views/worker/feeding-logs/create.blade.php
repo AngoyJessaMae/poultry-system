@@ -20,7 +20,7 @@
 
                         <!-- Quantity -->
                         <div class="mb-4">
-                            <label for="quantity" class="block text-gray-700 text-sm font-bold mb-2">Quantity (kg)</label>
+                            <label for="quantity" class="block text-gray-700 text-sm font-bold mb-2">Quantity consumed (grams)</label>
                             <input type="number" name="quantity" id="quantity" step="0.01" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                         </div>
 
