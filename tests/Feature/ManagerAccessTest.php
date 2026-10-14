@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Batch;
+use App\Models\FeedingLog;
 use App\Models\Station;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -59,6 +60,64 @@ class ManagerAccessTest extends TestCase
                 'report_type' => 'all',
             ]))
             ->assertOk();
+    }
+
+    public function test_manager_can_filter_feeding_reports_with_records(): void
+    {
+        $manager = User::factory()->create([
+            'role' => 'manager',
+            'is_active' => true,
+        ]);
+        $station = Station::create([
+            'name' => 'Feeding Report Station',
+            'min_age_days' => 1,
+            'max_age_days' => 60,
+        ]);
+        $batch = Batch::create([
+            'batch_code' => 'FEEDING-REPORT-' . uniqid(),
+            'station_id' => $station->id,
+            'created_by' => $manager->id,
+            'arrival_date' => now()->subDays(3),
+            'initial_quantity' => 100,
+            'initial_weight_grams' => 45,
+            'feeding_method' => 'twice_daily',
+            'status' => 'active',
+        ]);
+        FeedingLog::create([
+            'batch_id' => $batch->id,
+            'user_id' => $manager->id,
+            'feed_type' => 'Starter',
+            'quantity' => 12.5,
+            'method' => 'Free Choice',
+            'feeding_time' => now(),
+        ]);
+
+        $this->actingAs($manager)
+            ->get(route('manager.reports.index', [
+                'start_date' => now()->subDay()->toDateString(),
+                'end_date' => now()->addDay()->toDateString(),
+                'station_id' => $station->id,
+                'batch_id' => $batch->id,
+                'report_type' => 'feeding',
+            ]))
+            ->assertOk()
+            ->assertSee('12.50');
+    }
+
+    public function test_worker_cannot_access_reports(): void
+    {
+        $worker = User::factory()->create([
+            'role' => 'worker',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($worker)
+            ->get(route('manager.reports.index'))
+            ->assertForbidden();
+
+        $this->actingAs($worker)
+            ->get(route('reports.daily.index'))
+            ->assertForbidden();
     }
 
     public function test_manager_login_redirects_to_dashboard(): void

@@ -247,11 +247,11 @@
                         @foreach($records as $record)
                             <tr>
                                 @if($type === 'feeding')
-                                    <td>{{ $record->fed_at->format('Y-m-d') ?? 'N/A' }}</td>
+                                    <td>{{ $record->feeding_time?->format('Y-m-d') ?? 'N/A' }}</td>
                                     <td>{{ $record->user->name ?? 'N/A' }}</td>
                                     <td>{{ $record->station->name ?? 'N/A' }}</td>
                                     <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
-                                    <td>{{ number_format($record->quantity_kg ?? 0, 2) }}</td>
+                                    <td>{{ number_format($record->quantity ?? 0, 2) }}</td>
                                 @elseif($type === 'growth')
                                     <td>{{ $record->recorded_date->format('Y-m-d') ?? 'N/A' }}</td>
                                     <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
@@ -327,11 +327,11 @@
                     @foreach($data as $record)
                     <tr>
                         @if($filters['report_type'] === 'feeding')
-                            <td>{{ $record->fed_at->format('Y-m-d') }}</td>
+                            <td>{{ $record->feeding_time?->format('Y-m-d') ?? 'N/A' }}</td>
                             <td>{{ $record->user->name ?? 'N/A' }}</td>
                             <td>{{ $record->station->name ?? 'N/A' }}</td>
                             <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>
-                            <td>{{ number_format($record->quantity_kg, 2) }}</td>
+                            <td>{{ number_format($record->quantity ?? 0, 2) }}</td>
                         @elseif($filters['report_type'] === 'growth')
                             <td>{{ $record->recorded_date->format('Y-m-d') }}</td>
                             <td>{{ $record->batch->batch_code ?? 'N/A' }}</td>

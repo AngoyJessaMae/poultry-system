@@ -241,11 +241,11 @@
                                     @foreach($data as $record)
                                     <tr>
                                         @if($filters['report_type'] === 'feeding')
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $record->fed_at->format('Y-m-d') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $record->feeding_time?->format('Y-m-d') ?? 'N/A' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->user->name ?? 'N/A' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->station->name ?? 'N/A' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->batch->batch_code ?? 'N/A' }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ number_format($record->quantity_kg, 2) }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ number_format($record->quantity ?? 0, 2) }}</td>
                                         @elseif($filters['report_type'] === 'growth')
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $record->recorded_date->format('Y-m-d') }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->batch->batch_code ?? 'N/A' }}</td>
