@@ -190,6 +190,67 @@
             </div>
             @endif
 
+            @if(($filters['report_type'] ?? 'all') === 'all')
+            <div class="mt-8 bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 bg-white border-b border-gray-200">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">All Activity Records</h3>
+                            <p class="mt-1 text-sm text-gray-500">Feeding, growth, health, mortality, and sales activity for the selected filters.</p>
+                        </div>
+                        <span class="text-sm text-gray-500">{{ $data->flatten()->count() }} records</span>
+                    </div>
+                    <div class="mt-4 overflow-x-auto">
+                        @if($data->flatten()->isEmpty())
+                            <p class="py-8 text-center text-sm text-gray-500">No activity records found for the selected filters.</p>
+                        @else
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Type</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Date</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Batch</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Recorded by</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 bg-white">
+                                    @foreach($data as $type => $records)
+                                        @foreach($records as $record)
+                                            @php
+                                                $recordDate = match ($type) {
+                                                    'feeding' => $record->feeding_time,
+                                                    'growth', 'health' => $record->recorded_date,
+                                                    'mortality' => $record->mortality_date,
+                                                    'sales' => $record->sale_date,
+                                                    default => $record->created_at,
+                                                };
+                                                $details = match ($type) {
+                                                    'feeding' => number_format($record->quantity ?? 0, 2) . ' kg of ' . ($record->feed_type ?? 'feed'),
+                                                    'growth' => 'Average weight: ' . number_format($record->average_weight_grams ?? 0, 2) . ' g',
+                                                    'health' => ucfirst(str_replace('_', ' ', $record->status ?? 'recorded')) . ' - ' . ($record->observation ?? 'No observation'),
+                                                    'mortality' => ($record->count ?? 0) . ' birds - ' . ($record->suspected_cause ?? 'Cause not specified'),
+                                                    'sales' => ($record->heads_sold ?? 0) . ' birds sold for PHP ' . number_format($record->total_amount ?? 0, 2),
+                                                    default => 'Activity recorded',
+                                                };
+                                            @endphp
+                                            <tr>
+                                                <td class="px-6 py-4 text-sm font-medium capitalize text-gray-900">{{ $type }}</td>
+                                                <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{{ $recordDate?->format('Y-m-d') ?? 'N/A' }}</td>
+                                                <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{{ $record->batch->batch_code ?? 'N/A' }}</td>
+                                                <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{{ $record->user->name ?? 'N/A' }}</td>
+                                                <td class="px-6 py-4 text-sm text-gray-500">{{ $details }}</td>
+                                            </tr>
+                                        @endforeach
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Detailed Records Table -->
             @if(($filters['report_type'] ?? 'all') !== 'all')
             <div class="mt-8 bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -328,6 +389,19 @@
         </div>
     </div>
 
+    <div id="print-preview-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-950/70 p-4 sm:p-8" role="dialog" aria-modal="true" aria-labelledby="print-preview-title">
+        <div class="mx-auto max-w-6xl rounded-xl bg-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-8">
+                <h2 id="print-preview-title" class="text-lg font-semibold text-slate-900">Print Preview</h2>
+                <div class="flex items-center gap-3">
+                    <button type="button" id="close-print-preview" class="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Close</button>
+                    <button type="button" id="confirm-print-report" class="rounded-md bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700">Print Now</button>
+                </div>
+            </div>
+            <div id="print-preview-content" class="max-h-[calc(100vh-9rem)] overflow-y-auto bg-slate-100 p-4 sm:p-8"></div>
+        </div>
+    </div>
+
     <style>
         @media print {
             body * {
@@ -352,6 +426,44 @@
         }
     </style>
     <script>
-        document.getElementById('print-report')?.addEventListener('click', () => window.print());
+        const reportContent = document.getElementById('report-content');
+        const printPreviewModal = document.getElementById('print-preview-modal');
+        const printPreviewContent = document.getElementById('print-preview-content');
+        const closePrintPreview = document.getElementById('close-print-preview');
+        const confirmPrintReport = document.getElementById('confirm-print-report');
+
+        function closePreview() {
+            printPreviewModal?.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        document.getElementById('print-report')?.addEventListener('click', () => {
+            if (!reportContent || !printPreviewContent || !printPreviewModal) {
+                return;
+            }
+
+            const preview = reportContent.cloneNode(true);
+            preview.removeAttribute('id');
+            preview.querySelectorAll('.print\\:hidden').forEach((element) => element.remove());
+            printPreviewContent.replaceChildren(preview);
+            printPreviewModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        });
+
+        closePrintPreview?.addEventListener('click', closePreview);
+        printPreviewModal?.addEventListener('click', (event) => {
+            if (event.target === printPreviewModal) {
+                closePreview();
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closePreview();
+            }
+        });
+        confirmPrintReport?.addEventListener('click', () => {
+            closePreview();
+            window.print();
+        });
     </script>
 </x-app-layout>
