@@ -29,7 +29,7 @@
                                 @forelse($batches as $batch)
                                     <tr>
                                         <td class="px-4 py-3">{{ $batch->batch_code }}</td>
-                                        <td class="px-4 py-3">{{ $batch->farm_name ?: 'Not set' }}</td>
+                                        <td class="px-4 py-3">{{ config('farm.name') }}</td>
                                         <td class="px-4 py-3">{{ $batch->arrival_date->format('Y-m-d') }}</td>
                                         <td class="px-4 py-3">{{ $batch->flockman?->name ?: 'Not assigned' }}</td>
                                         <td class="px-4 py-3 text-right">

@@ -89,6 +89,13 @@
                                 </div>
                             </x-dropdown-link>
 
+                            <x-dropdown-link :href="route('house-rules')">
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v11a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a3 3 0 006 0M9 5h6m-6 6h6m-6 4h4"></path></svg>
+                                    {{ __('House Rules') }}
+                                </div>
+                            </x-dropdown-link>
+
                             <!-- Authentication -->
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
@@ -162,6 +169,10 @@
                 <!-- Terms & Conditions -->
                 <x-responsive-nav-link :href="route('account-policy', ['return_to' => 'dashboard'])">
                     {{ __('Terms & Conditions') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('house-rules')">
+                    {{ __('House Rules') }}
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->

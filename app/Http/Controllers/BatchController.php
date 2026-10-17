@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateBatchRequest;
 use App\Http\Requests\StoreBatchRequest;
 use App\Models\Batch;
+use App\Models\Station;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 
@@ -30,6 +31,18 @@ class BatchController extends Controller
     {
         $this->authorize('create', Batch::class);
         $data = $request->validated();
+
+        if ($data['status'] === 'active') {
+            $station = Station::findOrFail($data['station_id']);
+            $occupiedQuantity = $station->batches()->where('status', 'active')->sum('current_quantity');
+
+            if ($occupiedQuantity + $data['initial_quantity'] > $station->capacity) {
+                return back()->withErrors([
+                    'station_id' => "The selected station has only {$station->available_capacity} bird spaces remaining, so this batch cannot be added.",
+                ])->withInput();
+            }
+        }
+
         $data['created_by'] = auth()->id();
         $data['current_quantity'] = $data['initial_quantity'];
         Batch::create($data);
@@ -54,7 +67,25 @@ class BatchController extends Controller
     public function update(UpdateBatchRequest $request, Batch $batch)
     {
         $this->authorize('update', $batch);
-        $batch->update($request->validated());
+        $data = $request->validated();
+        $station = Station::findOrFail($data['station_id'] ?? $batch->station_id);
+        $status = $data['status'] ?? $batch->status;
+        $currentQuantity = $data['current_quantity'] ?? $batch->current_quantity;
+
+        if ($status === 'active') {
+            $occupiedQuantity = $station->batches()
+                ->where('status', 'active')
+                ->where('batches.id', '!=', $batch->id)
+                ->sum('current_quantity');
+
+            if ($occupiedQuantity + $currentQuantity > $station->capacity) {
+                return back()->withErrors([
+                    'station_id' => "The selected station has only {$station->available_capacity} bird spaces remaining, so this batch cannot be assigned there.",
+                ])->withInput();
+            }
+        }
+
+        $batch->update($data);
         $route = auth()->user()->isManager() ? 'manager.batches.index' : 'worker.batches.index';
         return redirect()->route($route);
     }

@@ -56,6 +56,10 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('account-policy', ['return_to' => 'dashboard']);
         }
 
+        if (!$user->hasAcknowledgedCurrentHouseRules()) {
+            return redirect()->route('house-rules', ['return_to' => 'dashboard']);
+        }
+
         if ($user->isManager()) {
             return redirect()->intended(route('manager.dashboard', absolute: false));
         }

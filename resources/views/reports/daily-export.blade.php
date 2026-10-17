@@ -12,7 +12,7 @@
 
 <h1>Daily Production Monitoring Form</h1>
 <table class="header">
-    <tr><th>Name of Farm</th><td>{{ $batch->farm_name ?: '________________________________' }}</td><th>Batch / Flock</th><td>{{ $batch->batch_code }}</td></tr>
+    <tr><th>Name of Farm</th><td>{{ config('farm.name') }}</td><th>Batch / Flock</th><td>{{ $batch->batch_code }}</td></tr>
     <tr><th>Date of Loading / Arrival</th><td>{{ $batch->arrival_date->format('Y-m-d') }}</td><th>Flockman / Recorder</th><td>{{ $batch->flockman?->name ?: '________________________________' }}</td></tr>
     <tr><th>No. of Heads Load</th><td>{{ $batch->initial_quantity }}</td><th>Initial Weight (average grams/bird)</th><td>{{ number_format($batch->initial_weight_grams, 2) }} g</td></tr>
 </table>

@@ -29,6 +29,9 @@ class User extends Authenticatable
         'policy_revision',
         'policy_viewed_at',
         'policy_accepted_at',
+        'house_rules_revision',
+        'house_rules_viewed_at',
+        'house_rules_acknowledged_at',
     ];
 
     /**
@@ -53,6 +56,8 @@ class User extends Authenticatable
             'password' => 'hashed',
             'policy_viewed_at' => 'datetime',
             'policy_accepted_at' => 'datetime',
+            'house_rules_viewed_at' => 'datetime',
+            'house_rules_acknowledged_at' => 'datetime',
         ];
     }
 
@@ -68,6 +73,21 @@ class User extends Authenticatable
             'policy_revision' => config('policy.revision'),
             'policy_viewed_at' => $viewedAt ?? now(),
             'policy_accepted_at' => now(),
+        ])->save();
+    }
+
+    public function hasAcknowledgedCurrentHouseRules(): bool
+    {
+        return $this->house_rules_revision === config('house_rules.revision')
+            && $this->house_rules_acknowledged_at !== null;
+    }
+
+    public function acknowledgeCurrentHouseRules(?\DateTimeInterface $viewedAt = null): void
+    {
+        $this->forceFill([
+            'house_rules_revision' => config('house_rules.revision'),
+            'house_rules_viewed_at' => $viewedAt ?? now(),
+            'house_rules_acknowledged_at' => now(),
         ])->save();
     }
 

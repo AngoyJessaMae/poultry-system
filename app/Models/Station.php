@@ -22,4 +22,20 @@ class Station extends Model
     {
         return $this->hasMany(Batch::class);
     }
+
+    public function getOccupiedCapacityAttribute(): int
+    {
+        $batches = $this->relationLoaded('batches')
+            ? $this->batches
+            : $this->batches()->get();
+
+        return (int) $batches
+            ->where('status', 'active')
+            ->sum('current_quantity');
+    }
+
+    public function getAvailableCapacityAttribute(): int
+    {
+        return max(0, (int) $this->capacity - $this->occupied_capacity);
+    }
 }

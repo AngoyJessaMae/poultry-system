@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
             'policy.accepted' => \App\Http\Middleware\EnsurePolicyAccepted::class,
+            'house-rules.acknowledged' => \App\Http\Middleware\EnsureHouseRulesAcknowledged::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

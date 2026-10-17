@@ -33,6 +33,9 @@ class UserFactory extends Factory
             'policy_revision' => config('policy.revision'),
             'policy_viewed_at' => now(),
             'policy_accepted_at' => now(),
+            'house_rules_revision' => config('house_rules.revision'),
+            'house_rules_viewed_at' => now(),
+            'house_rules_acknowledged_at' => now(),
         ];
     }
 

@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\HouseRulesController;
 use App\Http\Controllers\PolicyController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,13 @@ Route::get('account-policy', [PolicyController::class, 'show'])
     ->name('account-policy');
 Route::post('account-policy/accept', [PolicyController::class, 'accept'])
     ->name('account-policy.accept');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('house-rules', [HouseRulesController::class, 'show'])
+        ->name('house-rules');
+    Route::post('house-rules/acknowledge', [HouseRulesController::class, 'acknowledge'])
+        ->name('house-rules.acknowledge');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])

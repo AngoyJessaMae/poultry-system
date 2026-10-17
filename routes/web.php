@@ -53,7 +53,7 @@ Route::middleware(['auth', 'verified', 'policy.accepted'])->group(function () {
 });
 
 // 3. Manager-only group
-Route::middleware(['auth', 'verified', 'policy.accepted', 'role:manager'])->prefix('manager')->name('manager.')->group(function () {
+Route::middleware(['auth', 'verified', 'policy.accepted', 'house-rules.acknowledged', 'role:manager'])->prefix('manager')->name('manager.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'managerDashboard'])->name('dashboard');
 
     Route::resource('users', UserController::class);
@@ -66,7 +66,7 @@ Route::middleware(['auth', 'verified', 'policy.accepted', 'role:manager'])->pref
 });
 
 // 4. Worker-only group
-Route::middleware(['auth', 'verified', 'policy.accepted', 'role:worker'])->prefix('worker')->name('worker.')->group(function () {
+Route::middleware(['auth', 'verified', 'policy.accepted', 'house-rules.acknowledged', 'role:worker'])->prefix('worker')->name('worker.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'workerDashboard'])->name('dashboard');
 
     Route::resource('stations', StationController::class);
@@ -74,7 +74,7 @@ Route::middleware(['auth', 'verified', 'policy.accepted', 'role:worker'])->prefi
 
     Route::get('feeding-logs/select-batch', [FeedingLogController::class, 'selectBatch'])->name('feeding-logs.select-batch');
     Route::post('feeding-logs/create-for-batch', [FeedingLogController::class, 'createForBatch'])->name('feeding-logs.create-for-batch');
-    Route::resource('feeding-logs', FeedingLogController::class)->except(['create', 'store']);
+    Route::resource('feeding-logs', FeedingLogController::class)->only(['index', 'show']);
     Route::get('batches/{batch}/feeding-logs/create', [FeedingLogController::class, 'create'])->name('batches.feeding-logs.create');
     Route::post('batches/{batch}/feeding-logs', [FeedingLogController::class, 'store'])->name('batches.feeding-logs.store');
     Route::resource('growth-records', GrowthRecordController::class);

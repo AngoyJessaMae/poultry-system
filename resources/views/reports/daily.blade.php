@@ -29,7 +29,9 @@
                         @method('PUT')
                         <div>
                             <x-input-label class="min-h-[3rem] flex items-end" for="farm_name" value="Name of Farm" />
-                            <x-text-input id="farm_name" name="farm_name" class="block mt-1 w-full" :value="old('farm_name', $batch->farm_name)" />
+                            <div id="farm_name" class="mt-1 flex min-h-[42px] items-center rounded-md border border-gray-300 bg-gray-50 px-3 text-sm text-gray-700">
+                                {{ config('farm.name') }}
+                            </div>
                         </div>
                         <div>
                             <x-input-label class="min-h-[3rem] flex items-end" for="arrival_date" value="Date of Loading" />

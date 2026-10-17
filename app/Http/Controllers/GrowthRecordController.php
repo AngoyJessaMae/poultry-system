@@ -85,7 +85,7 @@ class GrowthRecordController extends Controller
         $arrivalDate = Carbon::parse($batch->arrival_date)->startOfDay();
         $recordDate = Carbon::parse($recordedDate)->startOfDay();
 
-        return max(0, $arrivalDate->diffInDays($recordDate, false));
+        return max(1, $arrivalDate->diffInDays($recordDate, false) + 1);
     }
 
     private function growthStage(int $age, float $averageWeightGrams): string

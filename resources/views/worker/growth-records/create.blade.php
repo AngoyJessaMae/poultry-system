@@ -97,7 +97,7 @@
 
             const arrival = new Date(`${arrivalDate}T00:00:00`);
             const recorded = new Date(`${recordedDate.value}T00:00:00`);
-            ageInput.value = Math.max(0, Math.floor((recorded - arrival) / 86400000));
+            ageInput.value = Math.max(1, Math.floor((recorded - arrival) / 86400000) + 1);
         };
 
         batchSelect.addEventListener('change', updateAge);

@@ -32,14 +32,13 @@ class DailyProductionReportController extends Controller
     public function updateHeader(Request $request, Batch $batch)
     {
         $data = $request->validate([
-            'farm_name' => ['nullable', 'string', 'max:255'],
             'arrival_date' => ['required', 'date'],
             'initial_quantity' => ['required', 'integer', 'min:1'],
             'initial_weight_grams' => ['required', 'numeric', 'min:0'],
             'flockman_id' => ['nullable', 'exists:users,id'],
         ]);
 
-        $batch->update($data);
+        $batch->update($data + ['farm_name' => config('farm.name')]);
 
         return back()->with('success', 'Production report header saved.');
     }
