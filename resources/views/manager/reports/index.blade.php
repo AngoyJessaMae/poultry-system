@@ -226,7 +226,7 @@
                                                     default => $record->created_at,
                                                 };
                                                 $details = match ($type) {
-                                                    'feeding' => number_format($record->quantity ?? 0, 2) . ' kg of ' . ($record->feed_type ?? 'feed'),
+                                                    'feeding' => number_format(($record->quantity ?? 0) / 1000, 2) . ' kg of ' . ($record->feed_type ?? 'feed'),
                                                     'growth' => 'Average weight: ' . number_format($record->average_weight_grams ?? 0, 2) . ' g',
                                                     'health' => ucfirst(str_replace('_', ' ', $record->status ?? 'recorded')) . ' - ' . ($record->observation ?? 'No observation'),
                                                     'mortality' => ($record->count ?? 0) . ' birds - ' . ($record->suspected_cause ?? 'Cause not specified'),
@@ -306,7 +306,7 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->user->name ?? 'N/A' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->station->name ?? 'N/A' }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->batch->batch_code ?? 'N/A' }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ number_format($record->quantity ?? 0, 2) }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ number_format(($record->quantity ?? 0) / 1000, 2) }}</td>
                                         @elseif($filters['report_type'] === 'growth')
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $record->recorded_date->format('Y-m-d') }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $record->batch->batch_code ?? 'N/A' }}</td>

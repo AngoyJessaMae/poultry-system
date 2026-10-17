@@ -126,6 +126,7 @@ class ReportController extends Controller
 
         $growthRecords = GrowthRecord::query()
             ->join('batches', 'growth_records.batch_id', '=', 'batches.id')
+            ->with('batch')
             ->when($filters['start_date'] ?? null, function ($q, $date) {
                 try {
                     $startDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
@@ -148,10 +149,14 @@ class ReportController extends Controller
             ->orderBy('recorded_date')
             ->get();
 
-        $weightGain = 0;
-        if ($growthRecords->count() > 1) {
-            $weightGain = ($growthRecords->last()->average_weight_grams - $growthRecords->first()->average_weight_grams) / 1000; // in kg
-        }
+        $weightGain = $growthRecords
+            ->groupBy('batch_id')
+            ->sum(function ($records) {
+                $latestRecord = $records->sortBy('recorded_date')->last();
+                $initialWeight = (float) $latestRecord->batch->initial_weight_grams;
+
+                return max(0, (float) $latestRecord->average_weight_grams - $initialWeight);
+            });
 
         $feedToWeightRatio = $weightGain > 0 ? $totalFeed / $weightGain : 0;
 
@@ -251,7 +256,7 @@ class ReportController extends Controller
                  'worker_id' => $workerId,
                  'worker_name' => $workerName,
                  'total_feedings' => $logs->count(),
-                 'total_feed_kg' => $logs->sum('quantity')
+                'total_feed_kg' => $logs->sum('quantity') / 1000
              ];
          })->sortByDesc('total_feedings')->values();
 
@@ -319,7 +324,7 @@ class ReportController extends Controller
             'totalMortalityRecords' => $totalMortalityRecords,
             'totalSalesRecords' => $totalSalesRecords,
             'uniqueWorkers' => $uniqueWorkers,
-            'totalFeedUsed' => $totalFeed,
+            'totalFeedUsed' => $totalFeed / 1000,
         ];
     }
 

@@ -54,6 +54,7 @@ class ReportExport implements FromView
 
         $growthRecords = \App\Models\GrowthRecord::query()
             ->join('batches', 'growth_records.batch_id', '=', 'batches.id')
+            ->with('batch')
             ->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '>=', $date))
             ->when($filters['end_date'] ?? null, fn ($q, $date) => $q->where('recorded_date', '<=', $date))
             ->when($filters['station_id'] ?? null, fn ($q, $id) => $q->where('batches.station_id', $id))
@@ -62,10 +63,14 @@ class ReportExport implements FromView
             ->orderBy('recorded_date')
             ->get();
 
-        $weightGain = 0;
-        if ($growthRecords->count() > 1) {
-            $weightGain = ($growthRecords->last()->average_weight_grams - $growthRecords->first()->average_weight_grams) / 1000; // in kg
-        }
+        $weightGain = $growthRecords
+            ->groupBy('batch_id')
+            ->sum(function ($records) {
+                $latestRecord = $records->sortBy('recorded_date')->last();
+                $initialWeight = (float) $latestRecord->batch->initial_weight_grams;
+
+                return max(0, (float) $latestRecord->average_weight_grams - $initialWeight);
+            });
 
         $feedToWeightRatio = $weightGain > 0 ? $totalFeed / $weightGain : 0;
 
@@ -116,7 +121,7 @@ class ReportExport implements FromView
                 'worker_id' => $workerId,
                 'worker_name' => $workerName,
                 'total_feedings' => $logs->count(),
-                'total_feed_kg' => $logs->sum('quantity')
+                'total_feed_kg' => $logs->sum('quantity') / 1000
             ];
         })->sortByDesc('total_feedings')->values();
 
@@ -156,7 +161,7 @@ class ReportExport implements FromView
             'totalMortalityRecords' => $totalMortalityRecords,
             'totalSalesRecords' => $totalSalesRecords,
             'uniqueWorkers' => $uniqueWorkers,
-            'totalFeedUsed' => $totalFeed,
+            'totalFeedUsed' => $totalFeed / 1000,
         ];
     }
 

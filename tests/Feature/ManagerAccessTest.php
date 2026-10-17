@@ -101,7 +101,7 @@ class ManagerAccessTest extends TestCase
                 'report_type' => 'feeding',
             ]))
             ->assertOk()
-            ->assertSee('12.50');
+            ->assertSee('0.01');
     }
 
     public function test_worker_cannot_access_reports(): void
