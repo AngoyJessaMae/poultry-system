@@ -6,14 +6,12 @@ use App\Models\Batch;
 use App\Models\FeedingLog;
 use App\Models\GrowthRecord;
 use App\Models\MortalityRecord;
-use App\Models\Sale;
 use App\Models\Station;
 use App\Models\User;
 use App\Policies\BatchPolicy;
 use App\Policies\FeedingLogPolicy;
 use App\Policies\GrowthRecordPolicy;
 use App\Policies\MortalityRecordPolicy;
-use App\Policies\SalePolicy;
 use App\Policies\StationPolicy;
 use PHPUnit\Framework\TestCase;
 
@@ -32,8 +30,6 @@ class WorkerAuthorizationTest extends TestCase
             [new FeedingLogPolicy(), new FeedingLog(), 'delete'],
             [new MortalityRecordPolicy(), new MortalityRecord(), 'update'],
             [new MortalityRecordPolicy(), new MortalityRecord(), 'delete'],
-            [new SalePolicy(), new Sale(), 'update'],
-            [new SalePolicy(), new Sale(), 'delete'],
             [new GrowthRecordPolicy(), new GrowthRecord(), 'update'],
             [new GrowthRecordPolicy(), new GrowthRecord(), 'delete'],
         ];

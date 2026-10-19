@@ -32,13 +32,4 @@ class SalePolicy
         return true;
     }
 
-    public function update(User $user, Sale $sale)
-    {
-        return $user->isManager() || $user->isWorker();
-    }
-
-    public function delete(User $user, Sale $sale)
-    {
-        return $user->isManager() || $user->isWorker();
-    }
 }

@@ -80,5 +80,5 @@ Route::middleware(['auth', 'verified', 'policy.accepted', 'house-rules.acknowled
     Route::resource('growth-records', GrowthRecordController::class);
     Route::resource('health-records', HealthRecordController::class);
     Route::resource('mortality-records', MortalityRecordController::class);
-    Route::resource('sales', SaleController::class);
+    Route::resource('sales', SaleController::class)->except(['edit', 'update', 'destroy']);
 });
