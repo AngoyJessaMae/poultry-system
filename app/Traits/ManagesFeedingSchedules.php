@@ -25,7 +25,9 @@ trait ManagesFeedingSchedules
             if ($batch->feeding_method === 'unlimited') {
                 $schedules->push((object)[
                     'batch_id' => $batch->id,
+                    'batch_code' => $batch->batch_code,
                     'batch_name' => $batch->name,
+                    'schedule_date' => $now->toDateString(),
                     'schedule_time' => 'Any time',
                     'type' => 'Unlimited',
                     'status' => 'due', // Always available to be fed
@@ -55,7 +57,9 @@ trait ManagesFeedingSchedules
                 if ($status) {
                     $schedules->push((object)[
                         'batch_id' => $batch->id,
+                        'batch_code' => $batch->batch_code,
                         'batch_name' => $batch->name,
+                        'schedule_date' => $feedTime->toDateString(),
                         'schedule_time' => $feedTime->format('g:i A'),
                         'type' => $feedConfig['type'],
                         'status' => $status,
@@ -79,23 +83,23 @@ trait ManagesFeedingSchedules
     private function getFeedTimesForBatch(Batch $batch): array
     {
         $times = [];
-        $today = Carbon::today();
+        $dates = [Carbon::today(), Carbon::tomorrow()];
 
-        switch ($batch->feeding_method) {
-            case 'twice_daily':
-                $times = [
-                    ['time' => $today->copy()->setHour(7), 'type' => 'Twice a Day'],
-                    ['time' => $today->copy()->setHour(19), 'type' => 'Twice a Day'],
-                ];
-                break;
-            case 'four_times_daily':
-                for ($i = 0; $i < 4; $i++) {
-                    $times[] = [
-                        'time' => $today->copy()->setHour(7)->addHours($i * 4),
-                        'type' => 'Four Times a Day'
-                    ];
-                }
-                break;
+        foreach ($dates as $date) {
+            switch ($batch->feeding_method) {
+                case 'twice_daily':
+                    $times[] = ['time' => $date->copy()->setHour(7), 'type' => 'Twice a Day'];
+                    $times[] = ['time' => $date->copy()->setHour(19), 'type' => 'Twice a Day'];
+                    break;
+                case 'four_times_daily':
+                    for ($i = 0; $i < 4; $i++) {
+                        $times[] = [
+                            'time' => $date->copy()->setHour(7)->addHours($i * 4),
+                            'type' => 'Four Times a Day'
+                        ];
+                    }
+                    break;
+            }
         }
         return $times;
     }
@@ -119,7 +123,7 @@ trait ManagesFeedingSchedules
 
     private function wasBatchFedForSchedule(Batch $batch, Carbon $feedTime, string $feedingMethod): bool
     {
-        $today = Carbon::today();
+        $scheduleDate = $feedTime->copy()->startOfDay();
 
         // Define the check window based on the feeding method
         list($startTime, $endTime) = [null, null];
@@ -127,11 +131,11 @@ trait ManagesFeedingSchedules
         if ($feedingMethod === 'twice_daily') {
             // For twice daily, check a window around the 7am and 7pm slots
             if ($feedTime->hour == 7) {
-                $startTime = $today->copy()->setHour(6); // 6 AM
-                $endTime = $today->copy()->setHour(11); // 11 AM
+                $startTime = $scheduleDate->copy()->setHour(6); // 6 AM
+                $endTime = $scheduleDate->copy()->setHour(11); // 11 AM
             } else { // 7 PM
-                $startTime = $today->copy()->setHour(18); // 6 PM
-                $endTime = $today->copy()->setHour(23); // 11 PM
+                $startTime = $scheduleDate->copy()->setHour(18); // 6 PM
+                $endTime = $scheduleDate->copy()->setHour(23); // 11 PM
             }
         } elseif ($feedingMethod === 'four_times_daily') {
             // For four times daily, the window is between the current and next feed time

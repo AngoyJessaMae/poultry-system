@@ -19,13 +19,13 @@
                             description: 'Monitor the first day closely and establish a healthy routine from the beginning.'
                         },
                         {
-                            image: '{{ asset('images/15Days.jpg') }}',
+                            image: '{{ asset('images/21Days.jpg') }}',
                             eyebrow: 'Day 15 flock',
                             title: 'Steady routines build stronger birds.',
                             description: 'Track growth, feeding, and health as the flock moves through its grower stage.'
                         },
                         {
-                            image: '{{ asset('images/21Days.jpg') }}',
+                            image: '{{ asset('images/15Days.jpg') }}',
                             eyebrow: 'Day 21 flock',
                             title: 'Small signals, better outcomes.',
                             description: 'Use the dashboard to spot activity patterns as the flock approaches market readiness.'
