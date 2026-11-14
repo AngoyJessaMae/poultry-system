@@ -24,7 +24,7 @@
         }
     }"
     :style="`width: ${width}px; min-width: ${width}px`"
-    class="bg-brand-orange-alt text-white min-h-screen p-4 shadow-lg relative flex flex-col flex-shrink-0"
+    class="bg-brand-orange-alt text-white h-screen min-h-0 p-4 shadow-lg relative flex flex-col flex-shrink-0 sticky top-0"
      x-show="sidebarOpen"
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="-translate-x-full"
@@ -34,7 +34,7 @@
      x-transition:leave-end="-translate-x-full">
 
     <!-- Sidebar content -->
-    <div class="flex-1 overflow-y-auto">
+    <div class="sidebar-scroll flex-1 min-h-0 overflow-y-auto">
         <div class="h-40 flex items-center justify-center">
             <a href="{{ route('dashboard') }}" class="w-full p-4">
                 <img src="{{ asset('images/logo2.png') }}" alt="Babia Poultry Farm Logo" class="w-full h-auto">

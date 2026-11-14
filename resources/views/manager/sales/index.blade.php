@@ -1,5 +1,5 @@
 <x-app-layout>
-    <x-slot name="header"><div class="flex items-center justify-between"><h2 class="font-semibold text-xl text-gray-800">Sales Management</h2><a class="underline" href="{{ route('manager.sales.create') }}">Record S3 Sale</a></div></x-slot>
+    <x-slot name="header"><div class="flex items-center justify-between gap-4"><h2 class="font-semibold text-xl text-gray-800">Sales Management</h2><a class="inline-flex min-h-10 items-center justify-center rounded-lg bg-brand-orange-alt px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-orange-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-300" href="{{ route('manager.sales.create') }}">Record S3 Sale</a></div></x-slot>
     <div class="py-12"><div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         @if(session('success'))<div class="mb-4 rounded bg-green-50 p-3 text-green-700">{{ session('success') }}</div>@endif
         <form method="GET" class="mb-6 grid grid-cols-1 gap-3 bg-white p-6 shadow-sm sm:grid-cols-4">

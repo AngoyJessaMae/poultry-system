@@ -24,7 +24,7 @@ class FinancialController extends Controller
         $stations = Station::whereIn('station_code', ['S1', 'S2', 'S3'])->orderBy('station_code')->get();
         $batches = Batch::orderBy('batch_code')->get();
         $feedTypes = FeedPrice::query()->select('feed_type')->distinct()->orderBy('feed_type')->pluck('feed_type');
-        $prices = FeedPrice::with('creator')->latest('effective_from')->latest('id')->get();
+        $prices = FeedPrice::with(['creator', 'station'])->latest('effective_from')->latest('id')->get();
         $expenses = OperationalExpense::with(['station', 'batch', 'creator'])->latest('expense_date')->latest('id')->limit(25)->get();
         $incomes = OtherIncome::with('creator')->latest('income_date')->latest('id')->limit(25)->get();
         $adjustments = FinancialAdjustment::with('creator')->latest('adjustment_date')->latest('id')->limit(25)->get();
@@ -33,9 +33,14 @@ class FinancialController extends Controller
 
     public function storePrice(Request $request)
     {
-        $data = $request->validate(['feed_type' => ['required', 'string', 'max:100'], 'price_per_sack' => ['required', 'numeric', 'gt:0'], 'sack_weight_kg' => ['required', 'numeric', 'gt:0'], 'effective_from' => ['required', 'date'], 'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from']]);
+        $data = $request->validate(['station_id' => ['nullable', 'integer', 'exists:stations,id'], 'feed_type' => ['required', 'string', 'max:100'], 'price_per_sack' => ['required', 'numeric', 'gt:0'], 'sack_weight_kg' => ['required', 'numeric', 'gt:0'], 'effective_from' => ['required', 'date'], 'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from']]);
         DB::transaction(function () use ($data) {
-            FeedPrice::where('feed_type', $data['feed_type'])->whereNull('effective_to')->whereDate('effective_from', '<', $data['effective_from'])->update(['effective_to' => Carbon::parse($data['effective_from'])->subDay()->toDateString()]);
+            $stationId = $data['station_id'] ?? null;
+            $priceQuery = FeedPrice::where('feed_type', $data['feed_type'])->whereNull('effective_to')->whereDate('effective_from', '<', $data['effective_from']);
+            $stationId
+                ? $priceQuery->where('station_id', $stationId)
+                : $priceQuery->whereNull('station_id');
+            $priceQuery->update(['effective_to' => Carbon::parse($data['effective_from'])->subDay()->toDateString()]);
             FeedPrice::create($data + ['created_by' => auth()->id()]);
         });
         return back()->with('success', 'Feed price saved with its effective period.');

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FeedPrice extends Model
 {
-    protected $fillable = ['feed_type', 'price_per_sack', 'sack_weight_kg', 'effective_from', 'effective_to', 'created_by'];
+    protected $fillable = ['station_id', 'feed_type', 'price_per_sack', 'sack_weight_kg', 'effective_from', 'effective_to', 'created_by'];
 
     protected $casts = [
         'price_per_sack' => 'decimal:2',
@@ -19,5 +19,10 @@ class FeedPrice extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function station(): BelongsTo
+    {
+        return $this->belongsTo(Station::class);
     }
 }

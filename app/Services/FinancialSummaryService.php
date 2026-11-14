@@ -57,7 +57,7 @@ class FinancialSummaryService
         foreach ($logs as $log) {
             $kg = (float) ($log->quantity_kg ?? ((float) $log->quantity / 1000));
             $date = $log->feeding_time->toDateString();
-            $price = $this->priceFor($log->feed_type, $log->feeding_time, $priceCache);
+            $price = $this->priceFor($log->feed_type, $log->station_id, $log->feeding_time, $priceCache);
             $expense = $price ? $kg / (float) $price->sack_weight_kg * (float) $price->price_per_sack : 0.0;
             $feedKg += $kg;
             $feedExpense += $expense;
@@ -98,13 +98,15 @@ class FinancialSummaryService
         ];
     }
 
-    private function priceFor(string $feedType, Carbon $date, array &$cache): ?FeedPrice
+    private function priceFor(string $feedType, int $stationId, Carbon $date, array &$cache): ?FeedPrice
     {
-        $key = $feedType . '|' . $date->toDateString();
+        $key = $stationId . '|' . $feedType . '|' . $date->toDateString();
         if (array_key_exists($key, $cache)) return $cache[$key];
-        $price = FeedPrice::where('feed_type', $feedType)->whereDate('effective_from', '<=', $date->toDateString())
+        $period = fn ($query) => $query->whereDate('effective_from', '<=', $date->toDateString())
             ->where(fn ($q) => $q->whereNull('effective_to')->orWhereDate('effective_to', '>=', $date->toDateString()))
-            ->latest('effective_from')->first();
+            ->latest('effective_from');
+        $price = $period(FeedPrice::where('station_id', $stationId)->where('feed_type', $feedType))->first();
+        $price ??= $period(FeedPrice::whereNull('station_id')->where('feed_type', $feedType))->first();
         return $cache[$key] = $price;
     }
 
