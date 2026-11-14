@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreStationRequest;
 use App\Http\Requests\UpdateStationRequest;
 use App\Models\Station;
+use App\Models\ManagementRequest;
+use App\Models\User;
+use App\Notifications\ManagementRequestSubmitted;
+use App\Helpers\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 
@@ -28,9 +32,36 @@ class StationController extends Controller
     public function store(StoreStationRequest $request)
     {
         $this->authorize('create', Station::class);
-        Station::create($request->validated());
-        $route = auth()->user()->isManager() ? 'manager.stations.index' : 'worker.stations.index';
-        return redirect()->route($route);
+        $data = $request->validated();
+        $data['station_code'] = strtoupper(trim($data['station_code']));
+
+        $duplicate = Station::whereRaw('LOWER(station_code) = ?', [strtolower($data['station_code'])])
+            ->orWhereRaw('LOWER(name) = ?', [strtolower(trim($data['name']))])
+            ->exists();
+        $pendingDuplicate = ManagementRequest::where('request_type', 'station')
+            ->where('status', 'pending')
+            ->get()
+            ->contains(function (ManagementRequest $item) use ($data) {
+                $payload = $item->payload;
+                return strtolower($payload['station_code'] ?? '') === strtolower($data['station_code'])
+                    || strtolower($payload['name'] ?? '') === strtolower(trim($data['name']));
+            });
+
+        if ($duplicate || $pendingDuplicate) {
+            return back()->withErrors(['station_code' => 'A station with this identifier or name already exists or is already pending approval.'])->withInput();
+        }
+
+        $managementRequest = ManagementRequest::create([
+            'request_type' => 'station',
+            'request_key' => strtolower($data['station_code']),
+            'requested_by' => auth()->id(),
+            'status' => 'pending',
+            'payload' => $data,
+        ]);
+        User::where('role', 'manager')->get()->each(fn (User $manager) => $manager->notify(new ManagementRequestSubmitted($managementRequest)));
+        ActivityLogger::logActivity(auth()->user(), 'submit-management-request', "Submitted station request #{$managementRequest->id}");
+
+        return redirect()->route('worker.management-requests.index')->with('success', 'Station request submitted for manager approval.');
     }
 
     public function show(Station $station)

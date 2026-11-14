@@ -29,13 +29,22 @@
                         <x-slot name="trigger">
                             <button class="relative inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                                @if($notifications->count() > 0)
-                                    <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">{{ $notifications->count() }}</span>
+                                @php($unreadNotificationCount = $notifications->count() + $approvalNotifications->count())
+                                @if($unreadNotificationCount > 0)
+                                    <span data-testid="notification-count" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">{{ $unreadNotificationCount }}</span>
                                 @endif
                             </button>
                         </x-slot>
 
                         <x-slot name="content">
+                            @if(Auth::user()->isManager() && $approvalNotifications->count() > 0)
+                                <div class="block px-4 py-2 text-xs text-gray-400">Management Requests</div>
+                                @foreach($approvalNotifications as $approvalNotification)
+                                    <a href="{{ route('manager.management-requests.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        {{ $approvalNotification->data['message'] ?? 'New request requires approval' }}
+                                    </a>
+                                @endforeach
+                            @endif
                             <div class="block px-4 py-2 text-xs text-gray-400">
                                 {{ __('Feeding Notifications') }}
                             </div>
@@ -147,9 +156,6 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('worker.mortality-records.index')" :active="request()->routeIs('worker.mortality-records.index')">
                     {{ __('Mortality') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('worker.sales.index')" :active="request()->routeIs('worker.sales.index')">
-                    {{ __('Sales') }}
                 </x-responsive-nav-link>
             @endif
         </div>

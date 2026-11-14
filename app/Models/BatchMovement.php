@@ -14,10 +14,12 @@ class BatchMovement extends Model
         'from_station_id',
         'to_station_id',
         'user_id',
+        'quantity',
         'moved_at',
     ];
 
     protected $casts = [
+        'quantity' => 'integer',
         'moved_at' => 'datetime',
     ];
 

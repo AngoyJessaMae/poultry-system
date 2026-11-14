@@ -59,16 +59,7 @@
                             <x-input-error :messages="$errors->get('initial_weight_grams')" class="mt-2" />
                         </div>
 
-                        <!-- Feeding Method -->
-                        <div class="mt-4">
-                            <x-input-label for="feeding_method" :value="__('Feeding Method')" />
-                            <select id="feeding_method" name="feeding_method" class="block mt-1 w-full border-gray-300 focus:border-brand-orange focus:ring-brand-orange rounded-md shadow-sm">
-                                <option value="twice_daily" {{ old('feeding_method') == 'twice_daily' ? 'selected' : '' }}>Twice Daily</option>
-                                <option value="four_times_daily" {{ old('feeding_method') == 'four_times_daily' ? 'selected' : '' }}>Four Times Daily</option>
-                                <option value="unlimited" {{ old('feeding_method') == 'unlimited' ? 'selected' : '' }}>Unlimited</option>
-                            </select>
-                            <x-input-error :messages="$errors->get('feeding_method')" class="mt-2" />
-                        </div>
+                        <p class="mt-4 rounded-md bg-orange-50 p-3 text-sm text-orange-800">Feeding schedule is assigned automatically from the selected station.</p>
 
                         <!-- Status -->
                         <div class="mt-4">
@@ -83,7 +74,7 @@
 
                         <div class="flex items-center justify-end mt-4">
                             <x-primary-button class="ms-4">
-                                {{ __('Save Batch') }}
+                                {{ __('Submit for Manager Approval') }}
                             </x-primary-button>
                         </div>
                     </form>

@@ -176,6 +176,63 @@
                 </div>
             </section>
 
+            <section class="mt-8 space-y-6" aria-labelledby="operations-heading">
+                <div class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">{{ __('Monitoring center') }}</p>
+                        <h2 id="operations-heading" class="mt-1 text-2xl font-bold text-slate-900">{{ __('Farm operations overview') }}</h2>
+                        <p class="mt-1 text-sm text-slate-500">{{ __('Actual records for') }} {{ $monitoring['period']['label'] }}. {{ __('Empty charts indicate that no records exist for the selected period.') }}</p>
+                    </div>
+                    <form method="GET" class="flex flex-wrap items-end gap-2">
+                        <label class="text-xs font-semibold text-slate-600">Year<input type="number" name="year" value="{{ $monitoring['period']['year'] }}" min="2000" max="2100" class="mt-1 block w-24 rounded-lg border-slate-300 text-sm"></label>
+                        <label class="text-xs font-semibold text-slate-600">Month<select name="month" class="mt-1 block rounded-lg border-slate-300 text-sm"><option value="">Whole year</option>@for($m=1;$m<=12;$m++)<option value="{{ $m }}" @selected($monitoring['period']['month'] === $m)>{{ date('F', mktime(0,0,0,$m,1)) }}</option>@endfor</select></label>
+                        <button class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">{{ __('Apply') }}</button>
+                    </form>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    @foreach($monitoring['stations'] as $stationSummary)
+                        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="flex items-start justify-between"><div><p class="text-xs font-semibold uppercase tracking-widest text-orange-600">{{ $stationSummary['station']->station_code }}</p><h3 class="mt-1 text-lg font-bold text-slate-900">{{ $stationSummary['station']->name }}</h3></div><span class="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">{{ $stationSummary['batch_count'] }} batches</span></div>
+                            <p class="mt-5 text-3xl font-bold text-slate-900">{{ number_format($stationSummary['quantity']) }}</p><p class="text-sm text-slate-500">{{ __('current chickens') }}</p>
+                            <div class="mt-4 space-y-2 border-t border-slate-100 pt-3">@forelse($stationSummary['batches'] as $batch)<div class="flex justify-between text-sm"><span class="text-slate-600">{{ $batch->batch_code }}</span><span class="font-semibold text-slate-900">{{ number_format($batch->current_quantity) }}</span></div>@empty<p class="text-sm text-slate-400">No active batches.</p>@endforelse</div>
+                        </div>
+                    @endforeach
+                    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm"><p class="text-xs font-semibold uppercase tracking-widest text-amber-700">Approvals</p><p class="mt-2 text-3xl font-bold text-slate-900">{{ $pendingRequests }}</p><p class="text-sm text-slate-600">pending station or batch requests</p><a href="{{ route('manager.management-requests.index') }}" class="mt-4 inline-flex text-sm font-semibold text-amber-800 hover:underline">Review requests →</a></div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                    @php
+                        $monitoringCharts = [
+                            ['title' => 'Feeding monitoring', 'subtitle' => number_format($monitoring['feeding']['total_kg'], 3) . ' kg recorded', 'rows' => $monitoring['feeding']['daily'], 'key' => 'kg', 'color' => 'bg-orange-500', 'empty' => 'No feeding records'],
+                            ['title' => 'Growth monitoring', 'subtitle' => 'Average weight in grams', 'rows' => $monitoring['growth'], 'key' => 'weight', 'color' => 'bg-emerald-500', 'empty' => 'No growth measurements'],
+                            ['title' => 'Health monitoring', 'subtitle' => $monitoring['health']['incidents'] . ' incidents · ' . $monitoring['health']['deaths'] . ' deaths', 'rows' => $monitoring['health']['monthly'], 'key' => 'deaths', 'color' => 'bg-rose-500', 'empty' => 'No mortality records'],
+                            ['title' => 'Production monitoring', 'subtitle' => 'Recorded daily output', 'rows' => $monitoring['production'], 'key' => 'output', 'color' => 'bg-sky-500', 'empty' => 'No production records'],
+                            ['title' => 'Sales monitoring', 'subtitle' => 'Completed transactions only', 'rows' => $monitoring['sales'], 'key' => 'revenue', 'color' => 'bg-violet-500', 'empty' => 'No completed sales'],
+                        ];
+                    @endphp
+                    @foreach($monitoringCharts as $chart)
+                        <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" aria-label="{{ $chart['title'] }} graph">
+                            <div class="flex items-start justify-between gap-4"><div><h3 class="text-lg font-bold text-slate-900">{{ $chart['title'] }}</h3><p class="mt-1 text-sm text-slate-500">{{ $chart['subtitle'] }}</p></div><span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{{ $monitoring['period']['label'] }}</span></div>
+                            @if($chart['rows']->isEmpty())
+                                <div class="mt-6 flex h-36 items-center justify-center rounded-xl border border-dashed border-slate-200 text-sm text-slate-400">{{ $chart['empty'] }}</div>
+                            @else
+                                @php $maxValue = max(1, (float) $chart['rows']->max($chart['key'])); @endphp
+                                <div class="mt-6 flex h-40 items-end gap-2 overflow-x-auto border-b border-l border-slate-200 px-3 pb-0 pt-4" role="img" aria-label="{{ $chart['title'] }} bar graph">
+                                    @foreach($chart['rows'] as $row)
+                                        @php $value = (float) $row[$chart['key']]; @endphp
+                                        <div class="flex h-full min-w-10 flex-1 flex-col items-center justify-end gap-1" title="{{ $row['label'] }}: {{ number_format($value, 2) }}">
+                                            <span class="text-[10px] font-semibold text-slate-600">{{ $chart['key'] === 'revenue' ? '₱' . number_format($value, 0) : number_format($value, 2) }}</span><div class="{{ $chart['color'] }} w-full rounded-t-md" style="height: {{ max(4, ($value / $maxValue) * 100) }}%"></div><span class="w-12 truncate text-center text-[10px] text-slate-500">{{ $row['label'] }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </article>
+                    @endforeach
+                    <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" aria-label="Financial monitoring graph"><div class="flex items-start justify-between"><div><h3 class="text-lg font-bold text-slate-900">Financial monitoring</h3><p class="mt-1 text-sm text-slate-500">Revenue, expenses, and net profit</p></div><a href="{{ route('manager.financial.index', ['month' => now()->month, 'year' => $monitoring['period']['year']]) }}" class="text-sm font-semibold text-orange-700 hover:underline">Open details →</a></div><div class="mt-6 grid grid-cols-3 gap-3 text-center"><div class="rounded-xl bg-emerald-50 p-4"><p class="text-xs text-emerald-700">Revenue</p><p class="mt-1 text-lg font-bold text-emerald-800">₱{{ number_format($financial['sales_revenue'] + $financial['other_income'], 0) }}</p></div><div class="rounded-xl bg-rose-50 p-4"><p class="text-xs text-rose-700">Expenses</p><p class="mt-1 text-lg font-bold text-rose-800">₱{{ number_format($financial['total_expenses'], 0) }}</p></div><div class="rounded-xl {{ $financial['net_profit'] >= 0 ? 'bg-sky-50' : 'bg-amber-50' }} p-4"><p class="text-xs text-slate-600">Net profit</p><p class="mt-1 text-lg font-bold text-slate-900">₱{{ number_format($financial['net_profit'], 0) }}</p></div></div></article>
+                </div>
+            </section>
+
             <div class="mt-8 flex items-end justify-between gap-4">
                 <div>
                     <p class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-600">{{ __('Quick actions') }}</p>

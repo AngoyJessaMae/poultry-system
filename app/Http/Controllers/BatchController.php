@@ -6,8 +6,13 @@ use App\Http\Requests\UpdateBatchRequest;
 use App\Http\Requests\StoreBatchRequest;
 use App\Models\Batch;
 use App\Models\Station;
+use App\Models\ManagementRequest;
+use App\Models\User;
+use App\Notifications\ManagementRequestSubmitted;
+use App\Helpers\ActivityLogger;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BatchController extends Controller
 {
@@ -32,6 +37,19 @@ class BatchController extends Controller
         $this->authorize('create', Batch::class);
         $data = $request->validated();
 
+        $data['batch_code'] = strtoupper(trim($data['batch_code']));
+        $duplicate = Batch::whereRaw('LOWER(batch_code) = ?', [strtolower($data['batch_code'])])->exists();
+        if ($duplicate) {
+            return back()->withErrors(['batch_code' => 'A batch with this identifier already exists.'])->withInput();
+        }
+        $pendingDuplicate = ManagementRequest::where('request_type', 'batch')
+            ->where('status', 'pending')
+            ->get()
+            ->contains(fn (ManagementRequest $item) => strtolower($item->payload['batch_code'] ?? '') === strtolower($data['batch_code']));
+        if ($pendingDuplicate) {
+            return back()->withErrors(['batch_code' => 'A request for this batch identifier is already pending approval.'])->withInput();
+        }
+
         if ($data['status'] === 'active') {
             $station = Station::findOrFail($data['station_id']);
             $occupiedQuantity = $station->batches()->where('status', 'active')->sum('current_quantity');
@@ -43,11 +61,17 @@ class BatchController extends Controller
             }
         }
 
-        $data['created_by'] = auth()->id();
-        $data['current_quantity'] = $data['initial_quantity'];
-        Batch::create($data);
-        $route = auth()->user()->isManager() ? 'manager.batches.index' : 'worker.batches.index';
-        return redirect()->route($route);
+        $managementRequest = ManagementRequest::create([
+            'request_type' => 'batch',
+            'request_key' => strtolower($data['batch_code']),
+            'requested_by' => auth()->id(),
+            'status' => 'pending',
+            'payload' => $data,
+        ]);
+        User::where('role', 'manager')->get()->each(fn (User $manager) => $manager->notify(new ManagementRequestSubmitted($managementRequest)));
+        ActivityLogger::logActivity(auth()->user(), 'submit-management-request', "Submitted batch request #{$managementRequest->id}");
+
+        return redirect()->route('worker.management-requests.index')->with('success', 'Batch request submitted for manager approval.');
     }
 
     public function show(Batch $batch)
@@ -67,25 +91,34 @@ class BatchController extends Controller
     public function update(UpdateBatchRequest $request, Batch $batch)
     {
         $this->authorize('update', $batch);
-        $data = $request->validated();
-        $station = Station::findOrFail($data['station_id'] ?? $batch->station_id);
-        $status = $data['status'] ?? $batch->status;
-        $currentQuantity = $data['current_quantity'] ?? $batch->current_quantity;
 
-        if ($status === 'active') {
-            $occupiedQuantity = $station->batches()
-                ->where('status', 'active')
-                ->where('batches.id', '!=', $batch->id)
-                ->sum('current_quantity');
-
-            if ($occupiedQuantity + $currentQuantity > $station->capacity) {
-                return back()->withErrors([
-                    'station_id' => "The selected station has only {$station->available_capacity} bird spaces remaining, so this batch cannot be assigned there.",
-                ])->withInput();
-            }
+        if ($request->hasAny(['initial_quantity', 'current_quantity'])) {
+            abort(403, 'Batch quantities can only be changed through authorized quantity transactions.');
         }
 
-        $batch->update($data);
+        $data = $request->validated();
+        try {
+            DB::transaction(function () use ($batch, $data) {
+                $lockedBatch = Batch::lockForUpdate()->findOrFail($batch->id);
+                $station = Station::lockForUpdate()->findOrFail($data['station_id'] ?? $lockedBatch->station_id);
+                $status = $data['status'] ?? $lockedBatch->status;
+
+                if ($status === 'active') {
+                    $occupiedQuantity = $station->batches()
+                        ->where('status', 'active')
+                        ->where('batches.id', '!=', $lockedBatch->id)
+                        ->sum('current_quantity');
+
+                    if ($occupiedQuantity + $lockedBatch->current_quantity > $station->capacity) {
+                        throw new \RuntimeException("The selected station does not have enough capacity for this batch.");
+                    }
+                }
+
+                $lockedBatch->update($data);
+            });
+        } catch (\RuntimeException $exception) {
+            return back()->withErrors(['station_id' => $exception->getMessage()])->withInput();
+        }
         $route = auth()->user()->isManager() ? 'manager.batches.index' : 'worker.batches.index';
         return redirect()->route($route);
     }

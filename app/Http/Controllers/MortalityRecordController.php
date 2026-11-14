@@ -6,6 +6,7 @@ use App\Helpers\ActivityLogger;
 use App\Http\Requests\StoreMortalityRecordRequest;
 use App\Models\MortalityRecord;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Batch;
 
@@ -36,34 +37,37 @@ class MortalityRecordController extends Controller
         $this->authorize('create', MortalityRecord::class);
 
         $data = $request->validated();
-        $batch = Batch::findOrFail($data['batch_id']);
 
-        if ($batch->current_quantity < $data['count']) {
-            return back()->withErrors(['count' => 'Mortality count cannot be greater than the current batch quantity.'])->withInput();
-        }
+        try {
+            DB::transaction(function () use ($request, $data, &$batch) {
+                $batch = Batch::lockForUpdate()->findOrFail($data['batch_id']);
+                if ($batch->current_quantity < $data['count']) {
+                    throw new \RuntimeException('Mortality count cannot be greater than the current batch quantity.');
+                }
+                $data = $request->validated();
+                $data['user_id'] = auth()->id();
+                $data['station_id'] = $batch->station_id;
+                $mortalityRecord = MortalityRecord::create($data);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $batch) {
-            $data = $request->validated();
-            $data['user_id'] = auth()->id();
-            $data['station_id'] = $batch->station_id;
-            $mortalityRecord = MortalityRecord::create($data);
+                // The MortalityRecordObserver handles decrementing the batch quantity.
 
-            // The MortalityRecordObserver handles decrementing the batch quantity.
+                // Check for high mortality rate
+                $totalMortalities = $batch->mortalityRecords()->sum('count');
+                $mortalityRate = ($totalMortalities / $batch->initial_quantity) * 100;
 
-            // Check for high mortality rate
-            $totalMortalities = $batch->mortalityRecords()->sum('count');
-            $mortalityRate = ($totalMortalities / $batch->initial_quantity) * 100;
-
-            if ($mortalityRate > 10) {
-                $batch->update([
-                    'is_below_expected' => true,
-                    'below_expected_reason' => 'High Mortality Rate',
-                ]);
-            }
+                if ($mortalityRate > 10) {
+                    $batch->update([
+                        'is_below_expected' => true,
+                        'below_expected_reason' => 'High Mortality Rate',
+                    ]);
+                }
             
-            // Log the activity
-            ActivityLogger::logActivity(auth()->user(), 'create-mortality-record', "Created mortality record #{$mortalityRecord->id} for batch {$batch->name} with {$data['count']} birds affected");
-        });
+                // Log the activity
+                ActivityLogger::logActivity(auth()->user(), 'create-mortality-record', "Created mortality record #{$mortalityRecord->id} for batch {$batch->name} with {$data['count']} birds affected");
+            });
+        } catch (\RuntimeException $exception) {
+            return back()->withErrors(['count' => $exception->getMessage()])->withInput();
+        }
 
         $route = auth()->user()->isManager() ? 'manager.mortality-records.index' : 'worker.mortality-records.index';
         return redirect()->route($route);

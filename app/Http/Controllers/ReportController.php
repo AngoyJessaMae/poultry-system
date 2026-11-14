@@ -195,6 +195,7 @@ class ReportController extends Controller
         // Total sales
         $totalSales = Sale::query()
             ->join('batches', 'sales.batch_id', '=', 'batches.id')
+            ->where('sales.status', 'completed')
             ->when($filters['start_date'] ?? null, function ($q, $date) {
                 try {
                     $startDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
@@ -291,6 +292,7 @@ class ReportController extends Controller
             ->count();
         $totalSalesRecords = Sale::query()
             ->join('batches', 'sales.batch_id', '=', 'batches.id')
+            ->where('sales.status', 'completed')
             ->when($filters['start_date'] ?? null, function ($q, $date) {
                 try {
                     $startDate = \Carbon\Carbon::parse($date)->format('Y-m-d');
@@ -336,7 +338,7 @@ class ReportController extends Controller
             'growth' => GrowthRecord::query()->join('batches', 'growth_records.batch_id', '=', 'batches.id')->select('growth_records.*'),
             'health' => HealthRecord::query()->with(['batch', 'user']),
             'mortality' => MortalityRecord::query(),
-            'sales' => Sale::query()->join('batches', 'sales.batch_id', '=', 'batches.id')->select('sales.*'),
+            'sales' => Sale::query()->join('batches', 'sales.batch_id', '=', 'batches.id')->where('sales.status', 'completed')->select('sales.*'),
             default => collect(),
         };
 
@@ -411,7 +413,7 @@ class ReportController extends Controller
                 ->when($filters['batch_id'] ?? null, fn ($q, $id) => $q->where('batch_id', $id))
                 ->get(),
             'mortality' => MortalityRecord::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('mortality_date', '>=', $date))->get(),
-            'sales' => Sale::query()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('sale_date', '>=', $date))->get(),
+            'sales' => Sale::valid()->when($filters['start_date'] ?? null, fn ($q, $date) => $q->where('sale_date', '>=', $date))->get(),
         ]);
     }
 }

@@ -137,7 +137,7 @@ class ManagerAccessTest extends TestCase
         ])->assertRedirect(route('manager.dashboard', absolute: false));
     }
 
-    public function test_manager_operational_routes_are_not_registered(): void
+    public function test_manager_operational_routes_are_not_registered_except_sales_management(): void
     {
         $removedRoutes = [
             'manager.stations.index',
@@ -146,7 +146,6 @@ class ManagerAccessTest extends TestCase
             'manager.growth-records.index',
             'manager.health-records.index',
             'manager.mortality-records.index',
-            'manager.sales.index',
         ];
 
         foreach ($removedRoutes as $routeName) {

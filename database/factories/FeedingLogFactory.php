@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\FeedingLog;
 use App\Models\Batch;
 use App\Models\User;
-use App\Enums\FeedType;
 
 class FeedingLogFactory extends Factory
 {
@@ -17,8 +16,12 @@ class FeedingLogFactory extends Factory
         return [
             'batch_id' => Batch::factory(),
             'user_id' => User::factory(),
-            'feed_type' => $this->faker->randomElement(FeedType::cases()),
-            'quantity_kg' => $this->faker->randomFloat(2, 1, 10),
+            'feed_type' => $this->faker->randomElement(['Starter', 'Grower', 'Finisher']),
+            'quantity' => $this->faker->randomFloat(3, 1000, 10000),
+            'quantity_kg' => fn (array $attributes) => round($attributes['quantity'] / 1000, 3),
+            'unit' => 'kg',
+            'method' => 'Restricted',
+            'feeding_time' => now(),
             'notes' => $this->faker->sentence,
         ];
     }

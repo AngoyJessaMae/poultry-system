@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 
 class WorkerAuthorizationTest extends TestCase
 {
-    public function test_worker_can_update_and_delete_operational_records(): void
+    public function test_worker_can_update_and_delete_allowed_operational_records(): void
     {
         $worker = new User(['role' => 'worker']);
 
@@ -26,8 +26,6 @@ class WorkerAuthorizationTest extends TestCase
             [new StationPolicy(), new Station(), 'delete'],
             [new BatchPolicy(), new Batch(), 'update'],
             [new BatchPolicy(), new Batch(), 'delete'],
-            [new FeedingLogPolicy(), new FeedingLog(), 'update'],
-            [new FeedingLogPolicy(), new FeedingLog(), 'delete'],
             [new MortalityRecordPolicy(), new MortalityRecord(), 'update'],
             [new MortalityRecordPolicy(), new MortalityRecord(), 'delete'],
             [new GrowthRecordPolicy(), new GrowthRecord(), 'update'],
@@ -37,5 +35,14 @@ class WorkerAuthorizationTest extends TestCase
         foreach ($abilities as [$policy, $model, $ability]) {
             $this->assertTrue($policy->{$ability}($worker, $model));
         }
+    }
+
+    public function test_worker_cannot_modify_historical_feeding_logs(): void
+    {
+        $worker = new User(['role' => 'worker']);
+        $policy = new FeedingLogPolicy();
+
+        $this->assertFalse($policy->update($worker, new FeedingLog()));
+        $this->assertFalse($policy->delete($worker, new FeedingLog()));
     }
 }

@@ -15,17 +15,23 @@ class FeedingLog extends Model
 
     protected $fillable = [
         'batch_id',
+        'station_id',
         'user_id',
         'feed_type',
         'quantity',
+        'quantity_kg',
+        'unit',
         'method',
         'feeding_time',
+        'scheduled_at',
         'notes',
     ];
 
     protected $casts = [
         'feeding_time' => 'datetime',
         'quantity' => 'decimal:2',
+        'quantity_kg' => 'decimal:3',
+        'scheduled_at' => 'datetime',
     ];
 
     public function batch(): BelongsTo
@@ -41,5 +47,10 @@ class FeedingLog extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getQuantityInKgAttribute(): float
+    {
+        return (float) ($this->quantity_kg ?? ((float) $this->quantity / 1000));
     }
 }

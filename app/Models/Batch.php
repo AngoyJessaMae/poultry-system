@@ -30,7 +30,6 @@ class Batch extends Model
         'flockman_id',
         'arrival_date',
         'initial_quantity',
-        'current_quantity',
         'initial_weight_grams',
         'feeding_method',
         'status',
@@ -97,6 +96,11 @@ class Batch extends Model
     public function movements(): HasMany
     {
         return $this->hasMany(BatchMovement::class)->orderBy('moved_at', 'desc');
+    }
+
+    public function quantityAdjustments(): HasMany
+    {
+        return $this->hasMany(QuantityAdjustment::class)->latest('adjusted_at');
     }
 
     protected $appends = [

@@ -83,8 +83,12 @@ class StationCapacityTest extends TestCase
                 'feeding_method' => 'twice_daily',
                 'status' => 'active',
             ])
-            ->assertRedirect(route('worker.batches.index', absolute: false));
+            ->assertRedirect(route('worker.management-requests.index', absolute: false));
 
-        $this->assertDatabaseHas('batches', ['batch_code' => 'CAPACITY-100']);
+        $this->assertDatabaseHas('management_requests', [
+            'request_type' => 'batch',
+            'status' => 'pending',
+        ]);
+        $this->assertDatabaseMissing('batches', ['batch_code' => 'CAPACITY-100']);
     }
 }

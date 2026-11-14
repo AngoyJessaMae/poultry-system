@@ -11,7 +11,7 @@ class StoreFeedingLogRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->isWorker() === true;
     }
 
     /**
@@ -22,11 +22,10 @@ class StoreFeedingLogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'batch_id' => 'required|exists:batches,id,status,active',
-            'feeding_time_slot' => 'nullable|string|max:255',
-            'feed_type' => 'required|string|max:255',
-            'quantity_kg' => 'required|numeric|min:0',
-            'fed_at' => 'required|date',
+            'unit' => ['required', 'string', 'in:kg,g,lb'],
+            'feed_type' => ['required', 'string', 'max:255'],
+            'quantity' => ['required', 'numeric', 'gt:0'],
+            'scheduled_at' => ['nullable', 'date'],
             'notes' => 'nullable|string',
         ];
     }

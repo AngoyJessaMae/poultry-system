@@ -38,18 +38,11 @@
                             <x-input-error :messages="$errors->get('arrival_date')" class="mt-2" />
                         </div>
 
-                        <!-- Initial Quantity -->
+                        <!-- Initial Quantity (immutable after registration) -->
                         <div class="mt-4">
                             <x-input-label for="initial_quantity" :value="__('Initial Quantity')" />
-                            <x-text-input id="initial_quantity" class="block mt-1 w-full" type="number" name="initial_quantity" :value="old('initial_quantity', $batch->initial_quantity)" required min="1" />
-                            <x-input-error :messages="$errors->get('initial_quantity')" class="mt-2" />
-                        </div>
-                        
-                        <!-- Current Quantity -->
-                        <div class="mt-4">
-                            <x-input-label for="current_quantity" :value="__('Current Quantity')" />
-                            <x-text-input id="current_quantity" class="block mt-1 w-full" type="number" name="current_quantity" :value="old('current_quantity', $batch->current_quantity)" required min="0" />
-                            <x-input-error :messages="$errors->get('current_quantity')" class="mt-2" />
+                            <p class="mt-1 text-sm text-gray-600">{{ $batch->initial_quantity }} (cannot be changed after registration)</p>
+                            <p class="mt-1 text-sm text-gray-600">Current quantity is calculated from recorded mortality, sales, transfers, and manager corrections.</p>
                         </div>
 
                         <!-- Initial Weight (grams) -->
@@ -59,16 +52,7 @@
                             <x-input-error :messages="$errors->get('initial_weight_grams')" class="mt-2" />
                         </div>
 
-                        <!-- Feeding Method -->
-                        <div class="mt-4">
-                            <x-input-label for="feeding_method" :value="__('Feeding Method')" />
-                            <select id="feeding_method" name="feeding_method" class="block mt-1 w-full border-gray-300 focus:border-brand-orange focus:ring-brand-orange rounded-md shadow-sm">
-                                <option value="twice_daily" {{ old('feeding_method', $batch->feeding_method) == 'twice_daily' ? 'selected' : '' }}>Twice Daily</option>
-                                <option value="four_times_daily" {{ old('feeding_method', $batch->feeding_method) == 'four_times_daily' ? 'selected' : '' }}>Four Times Daily</option>
-                                <option value="unlimited" {{ old('feeding_method', $batch->feeding_method) == 'unlimited' ? 'selected' : '' }}>Unlimited</option>
-                            </select>
-                            <x-input-error :messages="$errors->get('feeding_method')" class="mt-2" />
-                        </div>
+                        <p class="mt-4 rounded-md bg-orange-50 p-3 text-sm text-orange-800">Feeding schedule follows the selected station and cannot be changed here.</p>
 
                         <!-- Status -->
                         <div class="mt-4">

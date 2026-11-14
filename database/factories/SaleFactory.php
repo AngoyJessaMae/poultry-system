@@ -16,13 +16,17 @@ class SaleFactory extends Factory
         return [
             'batch_id' => Batch::factory(),
             'user_id' => User::factory(),
-            'quantity' => $this->faker->numberBetween(10, 50),
+            'station_id' => null,
+            'transaction_number' => 'SALE-' . strtoupper($this->faker->unique()->bothify('########??')),
+            'sale_date' => now()->toDateString(),
+            'heads_sold' => $this->faker->numberBetween(10, 50),
+            'total_weight_kg' => $this->faker->randomFloat(2, 10, 100),
             'price_per_kg' => $this->faker->randomFloat(2, 120, 150),
             'total_amount' => function (array $attributes) {
-                return $attributes['quantity'] * $attributes['price_per_kg'];
+                return $attributes['heads_sold'] * $attributes['price_per_kg'];
             },
-            'customer_name' => $this->faker->name,
-            'notes' => $this->faker->sentence,
+            'buyer_name' => $this->faker->name,
+            'status' => 'completed',
         ];
     }
 }

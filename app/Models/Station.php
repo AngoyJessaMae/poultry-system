@@ -5,12 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Station extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'station_code',
         'name',
         'capacity',
         'min_age_days',
@@ -21,6 +23,11 @@ class Station extends Model
     public function batches(): HasMany
     {
         return $this->hasMany(Batch::class);
+    }
+
+    public function feedingConfig(): HasOne
+    {
+        return $this->hasOne(StationFeedingConfig::class);
     }
 
     public function getOccupiedCapacityAttribute(): int

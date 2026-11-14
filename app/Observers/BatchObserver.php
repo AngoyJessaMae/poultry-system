@@ -23,6 +23,7 @@ class BatchObserver
                 'from_station_id' => $batch->getOriginal('station_id'),
                 'to_station_id' => $batch->station_id,
                 'user_id' => Auth::id(),
+                'quantity' => $batch->current_quantity,
                 'moved_at' => now(),
             ]);
         }

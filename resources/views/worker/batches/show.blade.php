@@ -33,7 +33,7 @@
                         @forelse($batch->movements as $movement)
                             <li class="py-4">
                                 <p class="text-sm text-gray-700">
-                                    Moved from <span class="font-medium">{{ $movement->fromStation->name ?? 'N/A' }}</span>
+                                    Moved {{ $movement->quantity ?? $batch->current_quantity }} birds from <span class="font-medium">{{ $movement->fromStation->name ?? 'N/A' }}</span>
                                     to <span class="font-medium">{{ $movement->toStation->name ?? 'N/A' }}</span>
                                     by <span class="font-medium">{{ $movement->user->name ?? 'System' }}</span>
                                 </p>
@@ -58,6 +58,7 @@
                                 ->concat($batch->mortalityRecords)
                                 ->concat($batch->sales)
                                 ->concat($batch->movements)
+                                ->concat($batch->quantityAdjustments)
                                 ->sortByDesc('created_at');
                         @endphp
                         <ul class="divide-y divide-gray-200">
@@ -88,6 +89,9 @@
                                                         @break
                                                     @case('BatchMovement')
                                                         Moved from {{ $item->fromStation->name ?? 'N/A' }} to {{ $item->toStation->name ?? 'N/A' }}.
+                                                        @break
+                                                    @case('QuantityAdjustment')
+                                                        Quantity corrected from {{ $item->previous_quantity }} to {{ $item->corrected_quantity }} by {{ $item->manager->name ?? 'Manager' }}. Reason: {{ $item->reason }}
                                                         @break
                                                 @endswitch
                                             </p>

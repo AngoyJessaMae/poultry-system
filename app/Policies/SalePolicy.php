@@ -19,17 +19,32 @@ class SalePolicy
 
     public function viewAny(User $user)
     {
-        return true;
+        return $user->isManager();
     }
 
     public function view(User $user, Sale $sale)
     {
-        return $user->isManager() || $sale->user_id === $user->id;
+        return $user->isManager();
     }
 
     public function create(User $user)
     {
-        return true;
+        return $user->isManager();
+    }
+
+    public function update(User $user, Sale $sale): bool
+    {
+        return $user->isManager();
+    }
+
+    public function delete(User $user, Sale $sale): bool
+    {
+        return false;
+    }
+
+    public function cancel(User $user, Sale $sale): bool
+    {
+        return $user->isManager();
     }
 
 }

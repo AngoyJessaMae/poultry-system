@@ -3,6 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Batch;
+use App\Models\Station;
+use App\Services\StationFeedingService;
 
 class UpdateBatchRequest extends FormRequest
 {
@@ -27,13 +30,26 @@ class UpdateBatchRequest extends FormRequest
             'station_id' => 'sometimes|exists:stations,id',
             'flockman_id' => 'sometimes|nullable|exists:users,id',
             'arrival_date' => 'sometimes|date',
-            'initial_quantity' => 'sometimes|integer|min:1',
-            'current_quantity' => 'sometimes|integer|min:0',
             'initial_weight_grams' => 'sometimes|numeric|min:0',
             'feeding_method' => 'sometimes|string',
             'status' => 'sometimes|string',
             'is_below_expected' => 'sometimes|boolean',
             'below_expected_reason' => 'nullable|string',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $batch = $this->route('batch');
+        $batch = $batch instanceof Batch ? $batch : Batch::find($batch);
+        $station = $this->station_id
+            ? Station::find($this->station_id)
+            : $batch?->station;
+
+        if ($station) {
+            $this->merge([
+                'feeding_method' => app(StationFeedingService::class)->configFor($station)['method'],
+            ]);
+        }
     }
 }

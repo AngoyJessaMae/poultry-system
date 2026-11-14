@@ -6,6 +6,10 @@ use App\Helpers\ActivityLogger;
 use App\Http\Requests\StoreFeedingLogRequest;
 use App\Models\Batch;
 use App\Models\FeedingLog;
+use App\Models\Station;
+use App\Services\StationFeedingService;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Traits\ManagesFeedingSchedules;
 use Carbon\Carbon;
@@ -39,27 +43,84 @@ class FeedingLogController extends Controller
     public function create($batch_id)
     {
         $this->authorize('create', FeedingLog::class);
-        $batch = Batch::findOrFail($batch_id);
-        return view('worker.feeding-logs.create', compact('batch'));
+        $batch = Batch::with('station')->where('status', 'active')->findOrFail($batch_id);
+        $schedule = request()->query('scheduled_at');
+        $config = app(StationFeedingService::class)->configFor($batch->station);
+        return view('worker.feeding-logs.create', compact('batch', 'schedule', 'config'));
     }
 
-    public function store(Request $request, $batch_id)
+    public function store(StoreFeedingLogRequest $request, Batch $batch)
     {
         $this->authorize('create', FeedingLog::class);
-        $batch = Batch::findOrFail($batch_id);
+        abort_unless($batch->status === 'active', 404);
 
-        $data = $request->validate([
-            'feed_type' => 'required|string|max:50',
-            'quantity' => 'required|numeric|min:0',
-            'feeding_time' => 'required|date',
-        ]);
+        $data = $request->validated();
+        $now = now();
+        $station = Station::findOrFail($batch->station_id);
+        $config = app(StationFeedingService::class)->configFor($station);
+        $scheduledAt = null;
 
-        $feedingLog = $batch->feedingLogs()->create($data + ['user_id' => auth()->id()]);
+        if ($config['method'] !== 'unlimited') {
+            if (empty($data['scheduled_at'])) {
+                return back()->withErrors(['scheduled_at' => 'Select a scheduled feeding session.'])->withInput();
+            }
+            $scheduledAt = Carbon::parse($data['scheduled_at']);
+            $validTime = collect($config['times'])->contains(fn (string $time) => $scheduledAt->format('H:i') === $time);
+            if (!$validTime) {
+                return back()->withErrors(['scheduled_at' => 'The selected feeding session is not configured for this station.'])->withInput();
+            }
+            if (FeedingLog::where('batch_id', $batch->id)->where('scheduled_at', $scheduledAt)->exists()) {
+                return back()->withErrors(['scheduled_at' => 'This feeding session has already been completed.'])->withInput();
+            }
+        }
+
+        $conversion = ['kg' => 1, 'g' => 0.001, 'lb' => 0.45359237];
+        $quantityKg = round((float) $data['quantity'] * $conversion[$data['unit']], 3);
+
+        try {
+            $feedingLog = DB::transaction(function () use ($batch, $station, $config, $data, $scheduledAt, $now, $quantityKg) {
+                return FeedingLog::create([
+                    'batch_id' => $batch->id,
+                    'station_id' => $station->id,
+                    'user_id' => auth()->id(),
+                    'feed_type' => $data['feed_type'],
+                    'quantity' => round($quantityKg * 1000, 3),
+                    'quantity_kg' => $quantityKg,
+                    'unit' => $data['unit'],
+                    'method' => $config['method'] === 'unlimited' ? 'Free Choice' : 'Restricted',
+                    'feeding_time' => $now,
+                    'scheduled_at' => $scheduledAt,
+                    'notes' => $data['notes'] ?? null,
+                ]);
+            });
+        } catch (QueryException $exception) {
+            if (str_contains($exception->getMessage(), 'feeding_logs_batch_id_scheduled_at_unique')) {
+                return back()->withErrors(['scheduled_at' => 'This feeding session has already been completed.'])->withInput();
+            }
+            throw $exception;
+        }
         
         // Log the activity
         ActivityLogger::logActivity(auth()->user(), 'create-feeding-log', "Created feeding log for batch {$batch->name}: {$data['quantity']}g of {$data['feed_type']}");
 
-        return redirect()->route('worker.feeding-logs.index')->with('success', 'Feeding logged successfully.');
+        return redirect()->route('worker.feeding-logs.station', ['station' => $station, 'date' => $now->toDateString()])->with('success', 'Feeding logged successfully.');
+    }
+
+    public function stationIndex(Station $station, Request $request)
+    {
+        $this->authorize('viewAny', FeedingLog::class);
+        $date = Carbon::parse($request->query('date', today()->toDateString()))->startOfDay();
+        $batches = Batch::where('status', 'active')->where('station_id', $station->id)->with('station')->get();
+        $service = app(StationFeedingService::class);
+        $config = $service->configFor($station);
+        $schedules = $batches->flatMap(fn (Batch $batch) => $service->schedulesFor($batch, $date));
+        $logs = FeedingLog::with(['batch', 'station', 'user'])
+            ->where('station_id', $station->id)
+            ->whereBetween('feeding_time', [$date->copy()->startOfDay(), $date->copy()->endOfDay()])
+            ->when(auth()->user()->isWorker(), fn ($query) => $query->where('user_id', auth()->id()))
+            ->latest('feeding_time')->get();
+
+        return view('worker.feeding-logs.station', compact('station', 'config', 'date', 'schedules', 'logs'));
     }
 
     public function show(FeedingLog $feedingLog)

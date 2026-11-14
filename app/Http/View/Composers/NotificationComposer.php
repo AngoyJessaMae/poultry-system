@@ -32,6 +32,9 @@ class NotificationComposer
             });
 
             $view->with('notifications', $notifications);
+            $view->with('approvalNotifications', $user->isManager()
+                ? $user->unreadNotifications()->where('type', \App\Notifications\ManagementRequestSubmitted::class)->latest()->get()
+                : collect());
         }
     }
 }

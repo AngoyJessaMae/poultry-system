@@ -14,6 +14,10 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DailyProductionReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\QuantityAdjustmentController;
+use App\Http\Controllers\ManagementRequestController;
+use App\Http\Controllers\StationFeedingConfigController;
+use App\Http\Controllers\FinancialController;
 use Illuminate\Support\Facades\Route;
 
 // 1. Guest routes (handled by Breeze)
@@ -59,6 +63,23 @@ Route::middleware(['auth', 'verified', 'policy.accepted', 'house-rules.acknowled
     Route::resource('users', UserController::class);
     Route::patch('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate'); // Route to activate pending workers
 
+    Route::get('/quantity-adjustments/{batch}/create', [QuantityAdjustmentController::class, 'create'])->name('quantity-adjustments.create');
+    Route::post('/quantity-adjustments/{batch}', [QuantityAdjustmentController::class, 'store'])->name('quantity-adjustments.store');
+    Route::get('/management-requests', [ManagementRequestController::class, 'index'])->name('management-requests.index');
+    Route::post('/management-requests/{managementRequest}/approve', [ManagementRequestController::class, 'approve'])->name('management-requests.approve');
+    Route::post('/management-requests/{managementRequest}/reject', [ManagementRequestController::class, 'reject'])->name('management-requests.reject');
+    Route::get('/stations/{station}/feeding-config', [StationFeedingConfigController::class, 'edit'])->name('stations.feeding-config.edit');
+    Route::put('/stations/{station}/feeding-config', [StationFeedingConfigController::class, 'update'])->name('stations.feeding-config.update');
+    Route::resource('sales', SaleController::class);
+    Route::post('/sales/{sale}/cancel', [SaleController::class, 'cancel'])->name('sales.cancel');
+    Route::get('/financial', [FinancialController::class, 'index'])->name('financial.index');
+    Route::post('/financial/feed-prices', [FinancialController::class, 'storePrice'])->name('financial.feed-prices.store');
+    Route::post('/financial/expenses', [FinancialController::class, 'storeExpense'])->name('financial.expenses.store');
+    Route::post('/financial/incomes', [FinancialController::class, 'storeIncome'])->name('financial.incomes.store');
+    Route::post('/financial/adjustments', [FinancialController::class, 'storeAdjustment'])->name('financial.adjustments.store');
+    Route::post('/financial/expenses/{expense}/cancel', [FinancialController::class, 'cancelExpense'])->name('financial.expenses.cancel');
+    Route::post('/financial/incomes/{income}/cancel', [FinancialController::class, 'cancelIncome'])->name('financial.incomes.cancel');
+
     // Activity Logs routes
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     Route::get('/activity-logs/history', [ActivityLogController::class, 'history'])->name('activity-logs.history');
@@ -68,6 +89,8 @@ Route::middleware(['auth', 'verified', 'policy.accepted', 'house-rules.acknowled
 // 4. Worker-only group
 Route::middleware(['auth', 'verified', 'policy.accepted', 'house-rules.acknowledged', 'role:worker'])->prefix('worker')->name('worker.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'workerDashboard'])->name('dashboard');
+    Route::get('/management-requests', [ManagementRequestController::class, 'index'])->name('management-requests.index');
+    Route::get('/feeding-logs/station/{station}', [FeedingLogController::class, 'stationIndex'])->name('feeding-logs.station');
 
     Route::resource('stations', StationController::class);
     Route::resource('batches', BatchController::class);
@@ -80,5 +103,4 @@ Route::middleware(['auth', 'verified', 'policy.accepted', 'house-rules.acknowled
     Route::resource('growth-records', GrowthRecordController::class);
     Route::resource('health-records', HealthRecordController::class);
     Route::resource('mortality-records', MortalityRecordController::class);
-    Route::resource('sales', SaleController::class)->except(['edit', 'update', 'destroy']);
 });

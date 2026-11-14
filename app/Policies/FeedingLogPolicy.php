@@ -34,11 +34,11 @@ class FeedingLogPolicy
 
     public function update(User $user, FeedingLog $feedingLog)
     {
-        return $user->isManager() || $user->isWorker();
+        return $user->isManager();
     }
 
     public function delete(User $user, FeedingLog $feedingLog)
     {
-        return $user->isManager() || $user->isWorker();
+        return $user->isManager();
     }
 }

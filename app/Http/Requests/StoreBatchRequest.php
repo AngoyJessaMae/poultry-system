@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\Station;
+use App\Services\StationFeedingService;
 
 class StoreBatchRequest extends FormRequest
 {
@@ -33,5 +35,18 @@ class StoreBatchRequest extends FormRequest
             'feeding_method' => ['required', Rule::in(['twice_daily', 'four_times_daily', 'unlimited'])],
             'status' => ['required', Rule::in(['active', 'sold_out', 'archived'])],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $station = $this->station_id ? Station::find($this->station_id) : null;
+        $feedingMethod = $station
+            ? app(StationFeedingService::class)->configFor($station)['method']
+            : null;
+
+        $this->merge(array_filter([
+            'batch_code' => strtoupper(trim((string) $this->batch_code)),
+            'feeding_method' => $feedingMethod,
+        ], static fn ($value) => $value !== null));
     }
 }

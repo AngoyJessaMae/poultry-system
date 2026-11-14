@@ -20,10 +20,17 @@
                     <form method="POST" action="{{ route('worker.stations.store') }}">
                         @csrf
 
+                        <!-- Station Identifier -->
+                        <div>
+                            <x-input-label for="station_code" :value="__('Station Identifier')" />
+                            <x-text-input id="station_code" class="block mt-1 w-full" type="text" name="station_code" :value="old('station_code')" placeholder="S4" required autofocus />
+                            <x-input-error :messages="$errors->get('station_code')" class="mt-2" />
+                        </div>
+
                         <!-- Name -->
                         <div>
                             <x-input-label for="name" :value="__('Station Name')" />
-                            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus />
+                            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required />
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
@@ -57,7 +64,7 @@
 
                         <div class="flex items-center justify-end mt-4">
                             <x-primary-button class="ms-4">
-                                {{ __('Save Station') }}
+                                {{ __('Submit for Manager Approval') }}
                             </x-primary-button>
                         </div>
                     </form>

@@ -11,7 +11,7 @@ class StoreSaleRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->isManager() === true;
     }
 
     /**
@@ -25,9 +25,8 @@ class StoreSaleRequest extends FormRequest
             'batch_id' => 'required|exists:batches,id,status,active',
             'sale_date' => 'required|date',
             'heads_sold' => 'required|integer|min:1',
-            'total_weight_kg' => 'required|numeric|min:0',
-            'price_per_kg' => 'required|numeric|min:0',
-            'total_amount' => 'required|numeric|min:0',
+            'total_weight_kg' => 'required|numeric|gt:0',
+            'price_per_kg' => 'required|numeric|gt:0',
             'buyer_name' => 'nullable|string|max:255',
         ];
     }

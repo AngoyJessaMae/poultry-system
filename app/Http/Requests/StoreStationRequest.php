@@ -22,11 +22,17 @@ class StoreStationRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'station_code' => ['required', 'string', 'max:50', 'regex:/^S[A-Z0-9-]+$/i'],
             'name' => 'required|string|max:255',
             'capacity' => 'required|integer|min:1',
             'min_age_days' => 'required|integer|min:0',
             'max_age_days' => 'required|integer|min:0',
             'description' => 'nullable|string',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge(['station_code' => strtoupper(trim((string) $this->station_code))]);
     }
 }
