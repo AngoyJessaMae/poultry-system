@@ -26,7 +26,10 @@ class StationController extends Controller
     {
         $this->authorize('create', Station::class);
         $view = auth()->user()->isManager() ? 'manager.stations.create' : 'worker.stations.create';
-        return view($view);
+        $usedCodes = Station::query()->pluck('station_code')->map(fn ($code) => strtoupper((string) $code))->all();
+        $stationCodes = array_values(array_diff(Station::ALLOWED_CODES, $usedCodes));
+
+        return view($view, compact('stationCodes'));
     }
 
     public function store(StoreStationRequest $request)

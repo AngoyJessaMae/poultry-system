@@ -11,6 +11,8 @@ class Station extends Model
 {
     use HasFactory;
 
+    public const ALLOWED_CODES = ['S1', 'S2', 'S3'];
+
     protected $fillable = [
         'station_code',
         'name',

@@ -9,6 +9,17 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
+                    <div class="mb-6 rounded-lg border border-orange-200 bg-orange-50 p-4 text-sm text-orange-900">
+                        <div class="flex items-start gap-3">
+                            <span class="mt-0.5 text-lg" aria-hidden="true">ⓘ</span>
+                            <div>
+                                <h3 class="font-semibold">What is a station identifier?</h3>
+                                <p class="mt-1">It is the short, unique code used to recognize a station throughout the system. Use a simple code such as <strong>S1</strong>, <strong>S2</strong>, or <strong>S3</strong>. The identifier connects the station to its batches, feeding records, feed prices, expenses, and reports.</p>
+                                <p class="mt-1">Choose one code per station and avoid reusing a code for a different station.</p>
+                            </div>
+                        </div>
+                    </div>
+
                     @if ($errors->has('station'))
                         <div class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                             {{ $errors->first('station') }}

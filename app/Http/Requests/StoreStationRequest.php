@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Models\Station;
 
 class StoreStationRequest extends FormRequest
 {
@@ -22,7 +24,7 @@ class StoreStationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'station_code' => ['required', 'string', 'max:50', 'regex:/^S[A-Z0-9-]+$/i'],
+            'station_code' => ['required', 'string', Rule::in(Station::ALLOWED_CODES)],
             'name' => 'required|string|max:255',
             'capacity' => 'required|integer|min:1',
             'min_age_days' => 'required|integer|min:0',
@@ -34,5 +36,12 @@ class StoreStationRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge(['station_code' => strtoupper(trim((string) $this->station_code))]);
+    }
+
+    public function messages(): array
+    {
+        return [
+            'station_code.in' => 'Please choose one of the supported station identifiers: S1, S2, or S3.',
+        ];
     }
 }

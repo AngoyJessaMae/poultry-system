@@ -17,13 +17,34 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
+                    <div class="mb-6 rounded-lg border border-orange-200 bg-orange-50 p-4 text-sm text-orange-900">
+                        <div class="flex items-start gap-3">
+                            <span class="mt-0.5 text-lg" aria-hidden="true">ⓘ</span>
+                            <div>
+                                <h3 class="font-semibold">Before you add this station</h3>
+                                <p class="mt-1">The station identifier is the station's short code. It helps the system connect this station to batches, feeding records, feed prices, expenses, and reports.</p>
+                                <p class="mt-1">Select one of the available codes: <strong>S1</strong>, <strong>S2</strong>, or <strong>S3</strong>. Do not reuse a code for another station.</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <form method="POST" action="{{ route('worker.stations.store') }}">
                         @csrf
 
                         <!-- Station Identifier -->
                         <div>
                             <x-input-label for="station_code" :value="__('Station Identifier')" />
-                            <x-text-input id="station_code" class="block mt-1 w-full" type="text" name="station_code" :value="old('station_code')" placeholder="S4" required autofocus />
+                            <select id="station_code" name="station_code" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required autofocus @disabled(count($stationCodes) === 0)>
+                                <option value="">Select a station identifier</option>
+                                @foreach($stationCodes as $stationCode)
+                                    <option value="{{ $stationCode }}" @selected(old('station_code') === $stationCode)>{{ $stationCode }}</option>
+                                @endforeach
+                            </select>
+                            @if(count($stationCodes) > 0)
+                                <p class="mt-1 text-sm text-gray-600">Only S1, S2, and S3 are available because the system uses these codes to manage feeding.</p>
+                            @else
+                                <p class="mt-1 text-sm text-red-600">All station identifiers are already in use. Rename or update an existing station instead of creating S4 or another code.</p>
+                            @endif
                             <x-input-error :messages="$errors->get('station_code')" class="mt-2" />
                         </div>
 
@@ -63,7 +84,7 @@
                         </div>
 
                         <div class="flex items-center justify-end mt-4">
-                            <x-primary-button class="ms-4">
+                            <x-primary-button class="ms-4" :disabled="count($stationCodes) === 0">
                                 {{ __('Submit for Manager Approval') }}
                             </x-primary-button>
                         </div>

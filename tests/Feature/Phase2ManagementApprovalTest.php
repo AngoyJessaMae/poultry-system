@@ -27,19 +27,31 @@ class Phase2ManagementApprovalTest extends TestCase
         $this->assertDatabaseCount('management_requests', 0);
     }
 
+    public function test_station_identifier_must_be_one_of_the_supported_codes(): void
+    {
+        $worker = User::factory()->create(['role' => 'worker']);
+
+        $this->actingAs($worker)->post(route('worker.stations.store'), [
+            'station_code' => 'S4', 'name' => 'Extra Station', 'capacity' => 100,
+            'min_age_days' => 1, 'max_age_days' => 10,
+        ])->assertSessionHasErrors('station_code');
+
+        $this->assertDatabaseCount('management_requests', 0);
+    }
+
     public function test_worker_station_request_is_pending_and_not_operational(): void
     {
         $worker = User::factory()->create(['role' => 'worker']);
         $manager = User::factory()->create(['role' => 'manager']);
 
         $this->actingAs($worker)->post(route('worker.stations.store'), [
-            'station_code' => 'S4', 'name' => 'New Station', 'capacity' => 200,
+            'station_code' => 'S3', 'name' => 'New Station', 'capacity' => 200,
             'min_age_days' => 31, 'max_age_days' => 45,
         ])->assertRedirect(route('worker.management-requests.index', absolute: false));
 
         $request = ManagementRequest::firstOrFail();
         $this->assertSame('pending', $request->status);
-        $this->assertDatabaseMissing('stations', ['station_code' => 'S4']);
+        $this->assertDatabaseMissing('stations', ['station_code' => 'S3']);
         $this->assertDatabaseHas('notifications', [
             'notifiable_id' => $manager->id,
             'type' => ManagementRequestSubmitted::class,
@@ -56,9 +68,9 @@ class Phase2ManagementApprovalTest extends TestCase
     {
         [$worker, $manager] = $this->users();
         $request = ManagementRequest::create([
-            'request_type' => 'station', 'request_key' => 's4', 'requested_by' => $worker->id,
+            'request_type' => 'station', 'request_key' => 's3', 'requested_by' => $worker->id,
             'status' => 'pending', 'payload' => [
-                'station_code' => 'S4', 'name' => 'New Station', 'capacity' => 200,
+                'station_code' => 'S3', 'name' => 'New Station', 'capacity' => 200,
                 'min_age_days' => 31, 'max_age_days' => 45, 'description' => null,
             ],
         ]);
@@ -66,7 +78,7 @@ class Phase2ManagementApprovalTest extends TestCase
         $this->actingAs($manager)->post(route('manager.management-requests.approve', $request))
             ->assertRedirect();
 
-        $this->assertDatabaseHas('stations', ['station_code' => 'S4', 'name' => 'New Station']);
+        $this->assertDatabaseHas('stations', ['station_code' => 'S3', 'name' => 'New Station']);
         $this->assertDatabaseHas('management_requests', ['id' => $request->id, 'status' => 'approved', 'reviewed_by' => $manager->id]);
 
         $this->actingAs($manager)->post(route('manager.management-requests.approve', $request))->assertStatus(409);

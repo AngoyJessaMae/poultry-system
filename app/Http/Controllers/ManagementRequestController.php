@@ -76,6 +76,7 @@ class ManagementRequestController extends Controller
     private function approveStation(array $payload): void
     {
         $code = strtoupper(trim($payload['station_code']));
+        abort_unless(in_array($code, Station::ALLOWED_CODES, true), 422, 'Only S1, S2, and S3 are valid station identifiers.');
         $exists = Station::whereRaw('LOWER(station_code) = ?', [strtolower($code)])
             ->orWhereRaw('LOWER(name) = ?', [strtolower(trim($payload['name']))])
             ->exists();
