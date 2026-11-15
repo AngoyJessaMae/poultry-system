@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Station;
 use App\Models\StationFeedingConfig;
+use App\Models\Batch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StationFeedingConfigController extends Controller
 {
@@ -31,10 +33,17 @@ class StationFeedingConfigController extends Controller
             return back()->withErrors(['schedule_times' => "This feeding method requires exactly {$requiredCount} unique feeding times."])->withInput();
         }
 
-        StationFeedingConfig::updateOrCreate(
-            ['station_id' => $station->id],
-            ['method' => $data['method'], 'schedule_times' => $times]
-        );
+        DB::transaction(function () use ($station, $data, $times) {
+            StationFeedingConfig::updateOrCreate(
+                ['station_id' => $station->id],
+                ['method' => $data['method'], 'schedule_times' => $times]
+            );
+
+            // Keep existing batches aligned with the station rule. Feeding
+            // logs are snapshots and are deliberately left unchanged.
+            Batch::where('station_id', $station->id)
+                ->update(['feeding_method' => $data['method']]);
+        });
 
         return back()->with('success', 'Station feeding configuration updated.');
     }
