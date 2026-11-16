@@ -46,7 +46,8 @@ class FeedingLogController extends Controller
         $batch = Batch::with('station')->where('status', 'active')->findOrFail($batch_id);
         $schedule = request()->query('scheduled_at');
         $config = app(StationFeedingService::class)->configFor($batch->station);
-        return view('worker.feeding-logs.create', compact('batch', 'schedule', 'config'));
+        $feedType = $batch->station->required_feed_type;
+        return view('worker.feeding-logs.create', compact('batch', 'schedule', 'config', 'feedType'));
     }
 
     public function store(StoreFeedingLogRequest $request, Batch $batch)

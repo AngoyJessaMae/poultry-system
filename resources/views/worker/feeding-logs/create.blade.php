@@ -22,7 +22,10 @@
                         <!-- Feed Type -->
                         <div class="mb-4">
                             <label for="feed_type" class="block text-gray-700 text-sm font-bold mb-2">Feed Type</label>
-                            <input type="text" name="feed_type" id="feed_type" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                            <select name="feed_type" id="feed_type" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                                <option value="{{ $feedType }}">{{ $feedType }}</option>
+                            </select>
+                            <p class="mt-1 text-sm text-gray-600">This feed type is assigned to {{ $batch->station->station_code ?? $batch->station->name }} and cannot be changed here.</p>
                             <x-input-error :messages="$errors->get('feed_type')" class="mt-2" />
                         </div>
 

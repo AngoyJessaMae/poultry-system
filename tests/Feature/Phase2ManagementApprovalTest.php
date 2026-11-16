@@ -85,6 +85,36 @@ class Phase2ManagementApprovalTest extends TestCase
         $this->assertDatabaseCount('stations', 1);
     }
 
+    public function test_deleted_batch_identifier_can_be_submitted_and_approved_again(): void
+    {
+        [$worker, $manager] = $this->users();
+        $station = Station::create([
+            'station_code' => 'S3', 'name' => 'Finishing Station', 'capacity' => 500,
+            'min_age_days' => 21, 'max_age_days' => 45,
+        ]);
+        $payload = [
+            'batch_code' => 'REUSED-BATCH', 'station_id' => $station->id,
+            'arrival_date' => now()->toDateString(), 'initial_quantity' => 100,
+            'initial_weight_grams' => 45, 'feeding_method' => 'twice_daily', 'status' => 'active',
+        ];
+
+        $this->actingAs($worker)->post(route('worker.batches.store'), $payload)->assertRedirect();
+        $firstRequest = ManagementRequest::latest('id')->firstOrFail();
+        $this->actingAs($manager)->post(route('manager.management-requests.approve', $firstRequest))->assertRedirect();
+        Batch::where('batch_code', 'REUSED-BATCH')->firstOrFail()->delete();
+
+        $this->actingAs($worker)->post(route('worker.batches.store'), $payload)->assertRedirect();
+        $secondRequest = ManagementRequest::latest('id')->firstOrFail();
+        $this->assertNotSame($firstRequest->id, $secondRequest->id);
+
+        $this->actingAs($manager)->post(route('manager.management-requests.approve', $secondRequest))->assertRedirect();
+
+        $this->assertDatabaseCount('management_requests', 2);
+        $this->assertDatabaseCount('batches', 1);
+        $this->assertDatabaseHas('management_requests', ['id' => $firstRequest->id, 'status' => 'approved']);
+        $this->assertDatabaseHas('management_requests', ['id' => $secondRequest->id, 'status' => 'approved']);
+    }
+
     public function test_manager_can_reject_batch_request_without_creating_a_batch(): void
     {
         [$worker, $manager] = $this->users();

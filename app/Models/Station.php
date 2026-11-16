@@ -13,6 +13,12 @@ class Station extends Model
 
     public const ALLOWED_CODES = ['S1', 'S2', 'S3'];
 
+    public const FEED_TYPES = [
+        'S1' => 'Starter',
+        'S2' => 'Booster',
+        'S3' => 'Finisher',
+    ];
+
     protected $fillable = [
         'station_code',
         'name',
@@ -30,6 +36,11 @@ class Station extends Model
     public function feedingConfig(): HasOne
     {
         return $this->hasOne(StationFeedingConfig::class);
+    }
+
+    public function getRequiredFeedTypeAttribute(): ?string
+    {
+        return self::FEED_TYPES[strtoupper((string) $this->station_code)] ?? null;
     }
 
     public function getOccupiedCapacityAttribute(): int

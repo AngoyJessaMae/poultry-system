@@ -82,10 +82,24 @@ class Phase3FeedingManagementTest extends TestCase
         $batch = $this->batch($station);
 
         $this->assertCount(4, app(\App\Services\StationFeedingService::class)->schedulesFor($batch, Carbon::parse('2026-11-14')));
-        $payload = ['feed_type' => 'Grower', 'quantity' => 5, 'unit' => 'kg', 'scheduled_at' => '2026-11-14 07:00:00'];
+        $payload = ['feed_type' => 'Booster', 'quantity' => 5, 'unit' => 'kg', 'scheduled_at' => '2026-11-14 07:00:00'];
         $this->actingAs($worker)->post(route('worker.batches.feeding-logs.store', $batch), $payload)->assertRedirect();
         $this->actingAs($worker)->post(route('worker.batches.feeding-logs.store', $batch), $payload)->assertSessionHasErrors('scheduled_at');
         $this->assertSame(1, FeedingLog::count());
+    }
+
+    public function test_station_feed_type_cannot_be_changed_when_recording(): void
+    {
+        $worker = $this->worker();
+        $station = $this->station('S2', 'Growing Station');
+        StationFeedingConfig::create(['station_id' => $station->id, 'method' => 'four_times_daily', 'schedule_times' => ['07:00', '11:00', '15:00', '19:00']]);
+        $batch = $this->batch($station);
+
+        $this->actingAs($worker)->post(route('worker.batches.feeding-logs.store', $batch), [
+            'feed_type' => 'Starter', 'quantity' => 5, 'unit' => 'kg', 'scheduled_at' => '2026-11-14 07:00:00',
+        ])->assertSessionHasErrors('feed_type');
+
+        $this->assertDatabaseCount('feeding_logs', 0);
     }
 
     public function test_s3_uses_manager_configured_times(): void
@@ -119,7 +133,7 @@ class Phase3FeedingManagementTest extends TestCase
 
         $batch->update(['station_id' => $s2->id]);
         $this->actingAs($worker)->post(route('worker.batches.feeding-logs.store', $batch), [
-            'feed_type' => 'Grower', 'quantity' => 4, 'unit' => 'kg', 'scheduled_at' => '2026-11-14 07:00:00',
+            'feed_type' => 'Booster', 'quantity' => 4, 'unit' => 'kg', 'scheduled_at' => '2026-11-14 07:00:00',
         ])->assertRedirect();
 
         $this->assertSame([$s1->id, $s2->id], FeedingLog::orderBy('id')->pluck('station_id')->all());
