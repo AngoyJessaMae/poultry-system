@@ -29,6 +29,7 @@ class StoreHealthRecordRequest extends FormRequest
             'status' => ['required', Rule::in(['under_treatment', 'recovering', 'recovered', 'dead'])],
             'recorded_date' => 'required|date',
             'observation' => 'required|string',
+            'suspected_cause' => 'nullable|string|max:255',
             'medication_name' => 'nullable|string|max:255',
             'dosage_amount' => 'nullable|string|max:255',
             'dosage_unit' => 'nullable|string|max:255',

@@ -123,6 +123,7 @@ class HealthRecordTest extends TestCase
             'dead_count' => 0,
             'status' => 'under_treatment',
             'observation' => 'Respiratory symptoms',
+            'suspected_cause' => 'Possible respiratory illness',
             'medication_name' => 'Supportive care',
             'dosage_amount' => null,
             'dosage_unit' => null,

@@ -49,7 +49,7 @@
 
                         <!-- Count -->
                         <div class="mt-4">
-                            <x-input-label for="count" :value="__('Number of Birds')" />
+                            <x-input-label for="count" :value="__('Number of Chickens')" />
                             <x-text-input id="count" class="block mt-1 w-full" type="number" name="count" :value="old('count')" min="1" required />
                             <x-input-error :messages="$errors->get('count')" class="mt-2" />
                         </div>

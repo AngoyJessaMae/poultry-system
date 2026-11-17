@@ -70,6 +70,13 @@
                             <x-input-error :messages="$errors->get('observation')" class="mt-2" />
                         </div>
 
+                        <!-- Suspected Cause (Optional) -->
+                        <div class="mt-4">
+                            <x-input-label for="suspected_cause" :value="__('Suspected Cause (Optional)')" />
+                            <x-text-input id="suspected_cause" class="block mt-1 w-full" type="text" name="suspected_cause" :value="old('suspected_cause', $healthRecord->suspected_cause)" placeholder="Example: illness, respiratory disease, injury" />
+                            <x-input-error :messages="$errors->get('suspected_cause')" class="mt-2" />
+                        </div>
+
                         <!-- Medication Name (Optional) -->
                         <div class="mt-4">
                             <x-input-label for="medication_name" :value="__('Medication Name (Optional)')" />

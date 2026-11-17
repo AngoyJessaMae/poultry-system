@@ -11,8 +11,6 @@ use App\Models\Report;
 use App\Models\Sale;
 use App\Models\User;
 use App\Traits\ManagesFeedingSchedules;
-use App\Services\FinancialSummaryService;
-use App\Services\MonitoringAnalyticsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -20,14 +18,8 @@ use Carbon\Carbon;
 class DashboardController extends Controller
 {
     use ManagesFeedingSchedules;
-    public function managerDashboard(Request $request, MonitoringAnalyticsService $analyticsService, FinancialSummaryService $financialService)
+    public function managerDashboard(Request $request)
     {
-        $filters = $request->validate([
-            'year' => ['nullable', 'integer', 'min:2000', 'max:2100'],
-            'month' => ['nullable', 'integer', 'between:1,12'],
-        ]);
-        $year = (int) ($filters['year'] ?? now()->year);
-        $month = isset($filters['month']) ? (int) $filters['month'] : null;
         $pendingWorkers = User::where('role', 'worker')->where('is_active', false)->count();
         $activeWorkers = User::where('role', 'worker')->where('is_active', true)->count();
         $generatedReports = Report::count();
@@ -61,10 +53,6 @@ class DashboardController extends Controller
 
         $activityTrendMax = max(1, $activityTrend->max('total'));
         $activityTrendTotal = $activityTrend->sum('total');
-        $monitoring = $analyticsService->managerOverview($year, $month);
-        $financial = $month
-            ? $financialService->summarize($year, $month)
-            : $financialService->summarizeYear($year);
         $pendingRequests = \App\Models\ManagementRequest::where('status', 'pending')->count();
 
         return view('manager.dashboard', compact(
@@ -74,8 +62,6 @@ class DashboardController extends Controller
             'activityTrend',
             'activityTrendMax',
             'activityTrendTotal',
-            'monitoring',
-            'financial',
             'pendingRequests'
         ));
     }

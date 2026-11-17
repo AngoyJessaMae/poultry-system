@@ -63,7 +63,7 @@ class MortalityRecordController extends Controller
                 }
             
                 // Log the activity
-                ActivityLogger::logActivity(auth()->user(), 'create-mortality-record', "Created mortality record #{$mortalityRecord->id} for batch {$batch->name} with {$data['count']} birds affected");
+                ActivityLogger::logActivity(auth()->user(), 'create-mortality-record', "Created mortality record #{$mortalityRecord->id} for batch {$batch->name} with {$data['count']} chickens affected");
             });
         } catch (\RuntimeException $exception) {
             return back()->withErrors(['count' => $exception->getMessage()])->withInput();

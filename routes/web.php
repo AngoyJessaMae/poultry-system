@@ -18,6 +18,7 @@ use App\Http\Controllers\QuantityAdjustmentController;
 use App\Http\Controllers\ManagementRequestController;
 use App\Http\Controllers\StationFeedingConfigController;
 use App\Http\Controllers\FinancialController;
+use App\Http\Controllers\MonitoringController;
 use Illuminate\Support\Facades\Route;
 
 // 1. Guest routes (handled by Breeze)
@@ -59,6 +60,7 @@ Route::middleware(['auth', 'verified', 'policy.accepted'])->group(function () {
 // 3. Manager-only group
 Route::middleware(['auth', 'verified', 'policy.accepted', 'house-rules.acknowledged', 'role:manager'])->prefix('manager')->name('manager.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'managerDashboard'])->name('dashboard');
+    Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring.index');
 
     Route::resource('users', UserController::class);
     Route::patch('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate'); // Route to activate pending workers

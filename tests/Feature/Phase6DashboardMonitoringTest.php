@@ -15,7 +15,7 @@ class Phase6DashboardMonitoringTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_manager_dashboard_contains_station_overview_and_separate_monitoring_data(): void
+    public function test_manager_dashboard_does_not_render_monitoring_center_graphs(): void
     {
         $manager = User::factory()->create(['role' => 'manager', 'is_active' => true]);
         $worker = User::factory()->create(['role' => 'worker', 'is_active' => true]);
@@ -38,14 +38,26 @@ class Phase6DashboardMonitoringTest extends TestCase
         $this->actingAs($manager)
             ->get(route('manager.dashboard', ['year' => 2026, 'month' => 11]))
             ->assertOk()
-            ->assertSee('Chick Station')
-            ->assertSee('Feeding monitoring')
-            ->assertSee('Growth monitoring')
-            ->assertSee('Health monitoring')
-            ->assertSee('Production monitoring')
-            ->assertSee('Sales monitoring')
-            ->assertSee('Financial monitoring')
-            ->assertSee('12.000 kg recorded');
+            ->assertDontSee('Feeding monitoring')
+            ->assertDontSee('Farm operations overview');
+    }
+
+    public function test_manager_monitoring_center_has_category_buttons_and_history_comparison(): void
+    {
+        $manager = User::factory()->create(['role' => 'manager', 'is_active' => true]);
+        $worker = User::factory()->create(['role' => 'worker', 'is_active' => true]);
+        $station = Station::create(['station_code' => 'S1', 'name' => 'Chick Station', 'capacity' => 500, 'min_age_days' => 1, 'max_age_days' => 10]);
+        $batch = Batch::create(['batch_code' => 'PHASE6-MONITOR', 'station_id' => $station->id, 'created_by' => $manager->id, 'arrival_date' => '2026-11-01', 'initial_quantity' => 100, 'current_quantity' => 100, 'initial_weight_grams' => 45, 'feeding_method' => 'unlimited', 'status' => 'active']);
+        FeedingLog::create(['batch_id' => $batch->id, 'station_id' => $station->id, 'user_id' => $worker->id, 'feed_type' => 'Starter', 'quantity' => 12000, 'quantity_kg' => 12, 'unit' => 'kg', 'method' => 'Free Choice', 'feeding_time' => '2026-11-05 07:00:00']);
+
+        $this->actingAs($manager)
+            ->get(route('manager.monitoring.index', ['metric' => 'feeding', 'year' => 2026, 'month' => 11]))
+            ->assertOk()
+            ->assertSee('Monitoring Center')
+            ->assertSee('Feeding Monitoring')
+            ->assertSee('Growth Monitoring')
+            ->assertSee('Period comparison')
+            ->assertSee('12.00');
     }
 
     public function test_worker_dashboard_exposes_operational_actions_without_manager_controls(): void

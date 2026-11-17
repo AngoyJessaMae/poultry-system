@@ -18,6 +18,7 @@
                         <p><strong>Recovered chickens:</strong> {{ $healthRecord->recovered_count }}</p>
                         <p><strong>Recovery status:</strong> {{ str_replace('_', ' ', ucfirst($healthRecord->status)) }}</p>
                         <p><strong>Observation:</strong> {{ $healthRecord->observation }}</p>
+                        <p><strong>Suspected cause:</strong> {{ $healthRecord->suspected_cause ?? 'N/A' }}</p>
                         <p><strong>Medication:</strong> {{ $healthRecord->medication_name ?? 'N/A' }}</p>
                         <p><strong>Dosage:</strong> {{ $healthRecord->dosage_amount ?? 'N/A' }} {{ $healthRecord->dosage_unit ?? '' }}</p>
                         <p><strong>Notes:</strong> {{ $healthRecord->notes ?? 'N/A' }}</p>

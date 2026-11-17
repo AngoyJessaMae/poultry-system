@@ -229,7 +229,7 @@
                                                     'feeding' => number_format(($record->quantity ?? 0) / 1000, 2) . ' kg of ' . ($record->feed_type ?? 'feed'),
                                                     'growth' => 'Average weight: ' . number_format($record->average_weight_grams ?? 0, 2) . ' g',
                                                     'health' => ucfirst(str_replace('_', ' ', $record->status ?? 'recorded')) . ' - ' . ($record->observation ?? 'No observation'),
-                                                    'mortality' => ($record->count ?? 0) . ' birds - ' . ($record->suspected_cause ?? 'Cause not specified'),
+                                                    'mortality' => ($record->count ?? 0) . ' chickens - ' . ($record->suspected_cause ?? 'Cause not specified'),
                                                     'sales' => ($record->heads_sold ?? 0) . ' birds sold for PHP ' . number_format($record->total_amount ?? 0, 2),
                                                     default => 'Activity recorded',
                                                 };

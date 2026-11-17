@@ -176,6 +176,7 @@
                 </div>
             </section>
 
+            @if(false)
             <section class="mt-8 space-y-6" aria-labelledby="operations-heading">
                 <div class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-end sm:justify-between">
                     <div>
@@ -232,6 +233,7 @@
                     <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" aria-label="Financial monitoring graph"><div class="flex items-start justify-between"><div><h3 class="text-lg font-bold text-slate-900">Financial monitoring</h3><p class="mt-1 text-sm text-slate-500">Revenue, expenses, and net profit</p></div><a href="{{ route('manager.financial.index', ['month' => now()->month, 'year' => $monitoring['period']['year']]) }}" class="text-sm font-semibold text-orange-700 hover:underline">Open details →</a></div><div class="mt-6 grid grid-cols-3 gap-3 text-center"><div class="rounded-xl bg-emerald-50 p-4"><p class="text-xs text-emerald-700">Revenue</p><p class="mt-1 text-lg font-bold text-emerald-800">₱{{ number_format($financial['sales_revenue'] + $financial['other_income'], 0) }}</p></div><div class="rounded-xl bg-rose-50 p-4"><p class="text-xs text-rose-700">Expenses</p><p class="mt-1 text-lg font-bold text-rose-800">₱{{ number_format($financial['total_expenses'], 0) }}</p></div><div class="rounded-xl {{ $financial['net_profit'] >= 0 ? 'bg-sky-50' : 'bg-amber-50' }} p-4"><p class="text-xs text-slate-600">Net profit</p><p class="mt-1 text-lg font-bold text-slate-900">₱{{ number_format($financial['net_profit'], 0) }}</p></div></div></article>
                 </div>
             </section>
+            @endif
 
             <div class="mt-8 flex items-end justify-between gap-4">
                 <div>

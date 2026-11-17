@@ -141,7 +141,7 @@ class HealthRecordController extends Controller
             'user_id' => $healthRecord->user_id,
             'mortality_date' => $healthRecord->recorded_date,
             'count' => $deadCount,
-            'suspected_cause' => $healthRecord->observation,
+            'suspected_cause' => $healthRecord->suspected_cause ?: $healthRecord->observation,
             'notes' => trim(collect([$healthRecord->remarks, $healthRecord->remedy])->filter()->implode("\n")),
         ];
 

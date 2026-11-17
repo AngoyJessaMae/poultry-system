@@ -96,6 +96,7 @@ class MonitoringAnalyticsService
 
         return [
             'incidents' => $health->count(),
+            'mortality_records' => $mortality->count(),
             'affected' => (int) $health->sum('affected_count'),
             'deaths' => (int) $mortality->sum('count'),
             'monthly' => $mortality->groupBy(fn ($record) => $record->mortality_date->format('Y-m'))

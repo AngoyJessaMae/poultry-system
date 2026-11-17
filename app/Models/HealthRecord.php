@@ -19,6 +19,7 @@ class HealthRecord extends Model
         'status',
         'recorded_date',
         'observation',
+        'suspected_cause',
         'medication_name',
         'dosage_amount',
         'dosage_unit',
